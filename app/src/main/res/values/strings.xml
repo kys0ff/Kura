@@ -10,4 +10,8 @@
     <string name="_2_allow_display_over_other_apps_to_show_the_lock_screen">2. Allow \'Display over other apps\' to show the lock screen.</string>
     <string name="allow_overlay">Allow Overlay</string>
     <string name="select_apps_to_lock">Select Apps to Lock</string>
+    <string name="system_protection">System Protection</string>
+    <string name="lock_uninstallers">Anti-Uninstall Protection</string>
+    <string name="lock_uninstallers_desc">Prevents unauthorized deletion of apps by requiring biometrics to access the Package Installer.</string>
+    <string name="critical_apps">Critical apps:</string>
 </resources>

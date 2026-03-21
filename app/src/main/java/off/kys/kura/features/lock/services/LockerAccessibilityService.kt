@@ -27,14 +27,11 @@ class LockerAccessibilityService : AccessibilityService() {
         if (event.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
             val packageName = event.packageName?.toString() ?: return
 
-            // 1. Ignore if it's our own app
-            if (packageName == this.packageName) return
-
-            // 2. Internal transition check (Splash -> Main)
+            // 1. Internal transition check (Splash -> Main)
             // If the package is the same as the one we just processed, don't re-check
             if (packageName == lastPackageName) return
 
-            // 3. Grace Period Check
+            // 2. Grace Period Check
             // If we unlocked this specific app in the last 3 seconds, ignore window changes
             val isInGracePeriod = packageName == lastUnlockedPackage &&
                     (System.currentTimeMillis() - lastUnlockTime) < 3000
