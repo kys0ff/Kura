@@ -1,3 +1,12 @@
 <resources>
     <string name="app_name">Kura</string>
+    <string name="access_restricted">Access Restricted</string>
+    <string name="use_biometrics_to_access">Use biometrics to access %1$s</string>
+    <string name="this_app">this app</string>
+    <string name="accessibility_desc">Used to monitor app launches to provide protection for your locked applications.</string>
+    <string name="action_required">Action Required</string>
+    <string name="_1_enable_accessibility_service_to_detect_app_launches">1. Enable Accessibility Service to detect app launches.</string>
+    <string name="enable_accessibility">Enable Accessibility</string>
+    <string name="_2_allow_display_over_other_apps_to_show_the_lock_screen">2. Allow \'Display over other apps\' to show the lock screen.</string>
+    <string name="allow_overlay">Allow Overlay</string>
 </resources>
