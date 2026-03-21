@@ -3,6 +3,7 @@ package off.kys.kura.features.lock.activity
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import androidx.activity.enableEdgeToEdge
 import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricPrompt
 import androidx.core.content.ContextCompat
@@ -21,6 +22,7 @@ class LockActivity : FragmentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
 
         // Ensure the activity doesn't show in Recents
         val targetPackage = intent.getStringExtra("TARGET_PACKAGE") ?: run {

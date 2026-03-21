@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Kura</string>
+    <string name="app_name" translatable="false">Kura</string>
     <string name="access_restricted">Access Restricted</string>
     <string name="use_biometrics_to_access">Use biometrics to access %1$s</string>
     <string name="this_app">this app</string>
