@@ -94,9 +94,9 @@ fun AppLockerMainScreen(
                         context.startActivity(intent)
                     }
                 )
-            }
 
-            Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(20.dp))
+            }
 
             // --- APP LIST SECTION ---
             Text(
