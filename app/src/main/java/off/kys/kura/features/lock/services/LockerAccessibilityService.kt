@@ -11,7 +11,13 @@ import off.kys.kura.features.lock.activity.LockActivity
 
 class LockerAccessibilityService : AccessibilityService() {
     private lateinit var prefs: AppLockRegistry
-    private var currentPackageName: String = this.packageName
+    private var lastPackageName: String? = null
+
+    // Track the package we just unlocked to avoid splash screen loops
+    companion object {
+        var lastUnlockedPackage: String? = null
+        var lastUnlockTime: Long = 0
+    }
 
     override fun onServiceConnected() {
         prefs = AppLockRegistry(this)
@@ -21,31 +27,40 @@ class LockerAccessibilityService : AccessibilityService() {
         if (event.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
             val packageName = event.packageName?.toString() ?: return
 
-            // 1. Ignore if the package hasn't changed (prevents redundant checks)
-            if (packageName == currentPackageName) return
+            // 1. Ignore if it's our own app
+            if (packageName == this.packageName) return
 
-            // 2. Ignore our own app (The Locker)
-            if (packageName == this.packageName) {
-                currentPackageName = packageName
+            // 2. Internal transition check (Splash -> Main)
+            // If the package is the same as the one we just processed, don't re-check
+            if (packageName == lastPackageName) return
+
+            // 3. Grace Period Check
+            // If we unlocked this specific app in the last 3 seconds, ignore window changes
+            val isInGracePeriod = packageName == lastUnlockedPackage &&
+                    (System.currentTimeMillis() - lastUnlockTime) < 3000
+
+            if (isInGracePeriod) {
+                lastPackageName = packageName
                 return
             }
 
-            // 3. Check if the app is locked in settings
+            // 4. Check if locked (this includes your 5-minute logic)
             if (prefs.isAppLocked(packageName)) {
                 launchLockScreen(packageName)
             }
 
-            currentPackageName = packageName
+            lastPackageName = packageName
         }
     }
 
+    override fun onInterrupt() {}
+
     private fun launchLockScreen(packageName: String) {
         val intent = Intent(this, LockActivity::class.java).apply {
-            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+            // Use NEW_TASK but avoid CLEAR_TASK to keep the Biometric prompt stable
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
             putExtra("TARGET_PACKAGE", packageName)
         }
         startActivity(intent)
     }
-
-    override fun onInterrupt() = Unit
 }

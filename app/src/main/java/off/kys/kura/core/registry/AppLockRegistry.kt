@@ -21,7 +21,7 @@ class AppLockRegistry(context: Context) {
 
         // Check 5-minute timeout
         val lastUnlock = prefs.getLong("unlock_$packageName", 0L)
-        val fiveMinutes = 5 * 60 * 1000
+        val fiveMinutes = 15 * 60 * 1000
         return (System.currentTimeMillis() - lastUnlock) > fiveMinutes
     }
 

@@ -34,9 +34,10 @@
 
         <activity
             android:name=".features.lock.activity.LockActivity"
+            android:configChanges="orientation|screenSize|keyboardHidden"
             android:excludeFromRecents="true"
             android:launchMode="singleTask"
-            android:theme="@style/Theme.AppCompat.DayNight.NoActionBar" />
+            android:theme="@style/Theme.AppLocker" />
 
         <service
             android:name=".features.lock.services.LockerAccessibilityService"
