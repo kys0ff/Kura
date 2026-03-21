@@ -16,7 +16,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -26,12 +25,13 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import off.kys.kura.R
+import off.kys.kura.core.common.PackageManagerUtils
+import off.kys.kura.core.common.extensions.isAccessibilityServiceEnabled
 import off.kys.kura.core.registry.AppLockRegistry
 import off.kys.kura.features.main.screen.components.AppItemRow
 import off.kys.kura.features.main.screen.components.PermissionCard
-import off.kys.kura.core.common.PackageManagerUtils
-import off.kys.kura.core.common.extensions.isAccessibilityServiceEnabled
 import org.koin.compose.koinInject
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -49,9 +49,17 @@ fun AppLockerMainScreen(
     val installedApps = remember { pmUtils.getInstalledApps() }
     var lockedApps by remember { mutableStateOf(prefs.getLockedPackages()) }
 
+    fun updatePermissionsState() {
+        isAccessibilityEnabled = context.isAccessibilityServiceEnabled()
+        canDrawOverlays = Settings.canDrawOverlays(context)
+    }
+
     // Refresh permissions when user returns to the app
-    LaunchedEffect(key1 = Unit) {
-        // This would ideally be triggered on lifecycle resume
+    LifecycleResumeEffect(key1 = Unit) {
+        updatePermissionsState()
+        onPauseOrDispose {
+            updatePermissionsState()
+        }
     }
 
     Scaffold(
