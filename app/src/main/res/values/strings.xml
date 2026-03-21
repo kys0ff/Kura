@@ -9,4 +9,5 @@
     <string name="enable_accessibility">Enable Accessibility</string>
     <string name="_2_allow_display_over_other_apps_to_show_the_lock_screen">2. Allow \'Display over other apps\' to show the lock screen.</string>
     <string name="allow_overlay">Allow Overlay</string>
+    <string name="select_apps_to_lock">Select Apps to Lock</string>
 </resources>

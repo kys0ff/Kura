@@ -1,14 +1,18 @@
-package off.kys.kura
+package off.kys.kura.features.lock.activity
 
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.os.Bundle
 import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricPrompt
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentActivity
+import off.kys.kura.R
+import off.kys.kura.core.registry.AppLockRegistry
+import off.kys.kura.core.common.PackageManagerUtils
+import org.koin.android.ext.android.inject
 
-class LockActivity : FragmentActivity() { // Must be FragmentActivity
+class LockActivity : FragmentActivity() {
+    private val pmUtils by inject<PackageManagerUtils>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -20,7 +24,7 @@ class LockActivity : FragmentActivity() { // Must be FragmentActivity
         val executor = ContextCompat.getMainExecutor(this)
         val callback = object : BiometricPrompt.AuthenticationCallback() {
             override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
-                LockerPrefs(this@LockActivity).saveUnlockTimestamp(packageName)
+                AppLockRegistry(this@LockActivity).saveUnlockTimestamp(packageName)
                 finish() // Success: Let them into the app
             }
 
@@ -35,21 +39,13 @@ class LockActivity : FragmentActivity() { // Must be FragmentActivity
             .setSubtitle(
                 getString(
                     R.string.use_biometrics_to_access,
-                    getAppNameFromPackage(packageName) ?: getString(R.string.this_app)
+                    pmUtils.getAppName(packageName) ?: getString(R.string.this_app)
                 )
             )
             .setAllowedAuthenticators(BiometricManager.Authenticators.BIOMETRIC_STRONG or BiometricManager.Authenticators.DEVICE_CREDENTIAL)
             .build()
 
         prompt.authenticate(info)
-    }
-
-    private fun getAppNameFromPackage(packageName: String): String? = try {
-        val applicationInfo = packageManager.getApplicationInfo(packageName, 0)
-        packageManager.getApplicationLabel(applicationInfo).toString()
-    } catch (_: PackageManager.NameNotFoundException) {
-        // Returns null if the package isn't installed on the device
-        null
     }
 
     private fun goHome() {

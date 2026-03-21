@@ -1,19 +1,20 @@
 @file:SuppressLint("AccessibilityPolicy")
 
-package off.kys.kura
+package off.kys.kura.features.lock.services
 
 import android.accessibilityservice.AccessibilityService
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.view.accessibility.AccessibilityEvent
+import off.kys.kura.core.registry.AppLockRegistry
+import off.kys.kura.features.lock.activity.LockActivity
 
 class LockerAccessibilityService : AccessibilityService() {
-
-    private lateinit var prefs: LockerPrefs
+    private lateinit var prefs: AppLockRegistry
     private var currentPackageName: String = this.packageName
 
     override fun onServiceConnected() {
-        prefs = LockerPrefs(this)
+        prefs = AppLockRegistry(this)
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent) {

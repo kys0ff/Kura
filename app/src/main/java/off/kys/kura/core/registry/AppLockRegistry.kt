@@ -1,16 +1,19 @@
-package off.kys.kura
+package off.kys.kura.core.registry
 
 import android.content.Context
 import androidx.core.content.edit
+import off.kys.kura.core.common.constants.ANDROID_SETTINGS_PACKAGE
 
-class LockerPrefs(context: Context) {
+class AppLockRegistry(context: Context) {
     private val prefs = context.getSharedPreferences("locker_settings", Context.MODE_PRIVATE)
 
     init {
-        setAppLocked("com.android.settings", true)
+        if (ANDROID_SETTINGS_PACKAGE !in getLockedPackages())
+            setAppLocked(ANDROID_SETTINGS_PACKAGE, true)
     }
 
-    fun getLockedPackages(): Set<String> = prefs.getStringSet("locked_packages", emptySet()) ?: emptySet()
+    fun getLockedPackages(): Set<String> =
+        prefs.getStringSet("locked_packages", emptySet()) ?: emptySet()
 
     fun isAppLocked(packageName: String): Boolean {
         val lockedSet = prefs.getStringSet("locked_packages", emptySet()) ?: emptySet()
@@ -23,7 +26,8 @@ class LockerPrefs(context: Context) {
     }
 
     fun setAppLocked(packageName: String, locked: Boolean) {
-        val set = prefs.getStringSet("locked_packages", emptySet())?.toMutableSet() ?: mutableSetOf()
+        val set =
+            prefs.getStringSet("locked_packages", emptySet())?.toMutableSet() ?: mutableSetOf()
         if (locked) set.add(packageName) else set.remove(packageName)
         prefs.edit { putStringSet("locked_packages", set) }
     }
