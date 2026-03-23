@@ -4,20 +4,60 @@ package off.kys.kura.features.lock.services
 
 import android.accessibilityservice.AccessibilityService
 import android.annotation.SuppressLint
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
+import android.os.Build
+import android.util.Log
 import android.view.accessibility.AccessibilityEvent
 import off.kys.kura.core.registry.AppLockRegistry
 import off.kys.kura.features.lock.activity.LockActivity
 import org.koin.android.ext.android.inject
 
+private const val TAG = "LockerAccessibilityService"
+
 class LockerAccessibilityService : AccessibilityService() {
     private val registry: AppLockRegistry by inject()
+    private val screenOffReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            Log.d(TAG, "onReceive: Resetting all sessions")
+            // Clear the grace period when screen turns off
+            lastUnlockedPackage = null
+            lastUnlockTime = 0L
+            // Optionally clear the registry timestamps too
+            registry.clearAllSessions()
+        }
+    }
     private var lastPackageName: String? = null
 
     // Track the package we just unlocked to avoid splash screen loops
     companion object {
         var lastUnlockedPackage: String? = null
         var lastUnlockTime: Long = 0
+    }
+
+    override fun onCreate() {
+        super.onCreate()
+
+        val filter = IntentFilter(Intent.ACTION_SCREEN_OFF)
+
+        // For Android 14+ (API 34) support:
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            registerReceiver(screenOffReceiver, filter, RECEIVER_NOT_EXPORTED)
+        } else {
+            registerReceiver(screenOffReceiver, filter)
+        }
+    }
+
+    override fun onDestroy() {
+        // ALWAYS unregister to prevent memory leaks and crashes
+        try {
+            unregisterReceiver(screenOffReceiver)
+        } catch (e: Exception) {
+            Log.e(TAG, "onDestroy: Error unregistering receiver", e)
+        }
+        super.onDestroy()
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent) {
