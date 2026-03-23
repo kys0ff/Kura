@@ -73,6 +73,7 @@ fun MainScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(contentPadding)
+                .padding(horizontal = 8.dp)
         ) {
             if (!state.isAccessibilityEnabled || !state.canDrawOverlays) {
                 PermissionCard(
