@@ -22,4 +22,6 @@
     <string name="device_admin_label">Kura Shield Protection</string>
     <string name="device_admin_description">Enabling this prevents Kura Locker from being uninstalled or stopped without your permission. This provides the highest level of security for your locked apps.</string>
     <string name="protection_enabled">Advanced Protection Activated</string>
+    <string name="lock_settings">Lock System Settings</string>
+    <string name="lock_settings_desc">Prevents access to Android Settings to stop users from disabling the locker or clearing data.</string>
 </resources>

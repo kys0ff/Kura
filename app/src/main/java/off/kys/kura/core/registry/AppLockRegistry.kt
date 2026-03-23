@@ -2,7 +2,6 @@ package off.kys.kura.core.registry
 
 import android.content.Context
 import androidx.core.content.edit
-import off.kys.kura.core.common.constants.ANDROID_SETTINGS_PACKAGE
 
 class AppLockRegistry(context: Context) {
     private val prefs = context.getSharedPreferences("locker_settings", Context.MODE_PRIVATE)
@@ -10,13 +9,6 @@ class AppLockRegistry(context: Context) {
     companion object {
         // Use one constant so they don't get out of sync
         private const val SESSION_TIMEOUT_MS = 5 * 60 * 1000L
-    }
-
-    init {
-        // Ensure Settings is always in the locked set
-        if (!getLockedPackages().contains(ANDROID_SETTINGS_PACKAGE)) {
-            setAppLocked(ANDROID_SETTINGS_PACKAGE, true)
-        }
     }
 
     fun getLockedPackages(): Set<String> =

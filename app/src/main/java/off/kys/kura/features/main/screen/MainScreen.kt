@@ -1,3 +1,5 @@
+@file:SuppressLint("LocalContextGetResourceValueCall")
+
 package off.kys.kura.features.main.screen
 
 import android.annotation.SuppressLint
@@ -19,7 +21,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -33,6 +34,9 @@ import androidx.lifecycle.compose.LifecycleResumeEffect
 import off.kys.kura.R
 import off.kys.kura.core.admin.LockerAdminReceiver
 import off.kys.kura.core.common.PackageManagerUtils
+import off.kys.kura.core.common.constants.ANDROID_SETTINGS_PACKAGE
+import off.kys.kura.core.common.constants.ANDROID_UNINSTALLER_PACKAGES
+import off.kys.kura.core.common.constants.KURA_PACKAGE
 import off.kys.kura.core.common.extensions.isAccessibilityServiceEnabled
 import off.kys.kura.core.registry.AppLockRegistry
 import off.kys.kura.features.main.screen.components.AppItemRow
@@ -40,21 +44,13 @@ import off.kys.kura.features.main.screen.components.PermissionCard
 import off.kys.kura.features.main.screen.components.SystemProtectionSection
 import org.koin.compose.koinInject
 
-@SuppressLint("LocalContextGetResourceValueCall")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AppLockerMainScreen(
+fun MainScreen(
     context: Context = LocalContext.current,
     pmUtils: PackageManagerUtils = koinInject(),
     prefs: AppLockRegistry = koinInject()
 ) {
-    // 1. Define Critical Packages
-    val myPackage = context.packageName
-    val settingsPackage = "com.android.settings"
-    val uninstallerPackages = remember {
-        listOf("com.google.android.packageinstaller", "com.android.packageinstaller")
-    }
-
     // --- SYSTEM UTILS ---
     val dpm =
         remember { context.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager }
@@ -65,14 +61,15 @@ fun AppLockerMainScreen(
     var canDrawOverlays by remember { mutableStateOf(Settings.canDrawOverlays(context)) }
 
     // --- PROTECTION STATE ---
+    var isSettingsLocked by remember { mutableStateOf(prefs.isAppLocked(ANDROID_SETTINGS_PACKAGE)) }
     var lockedApps by remember { mutableStateOf(prefs.getLockedPackages()) }
     var isAdminActive by remember { mutableStateOf(dpm.isAdminActive(adminComponent)) }
 
     // Self-lock is just checking if our own package is in the locked list
-    val isSelfLockEnabled = remember(lockedApps) { lockedApps.contains(myPackage) }
+    val isSelfLockEnabled = remember(lockedApps) { lockedApps.contains(KURA_PACKAGE) }
 
     val isUninstallLocked = remember(lockedApps) {
-        uninstallerPackages.all { lockedApps.contains(it) }
+        ANDROID_UNINSTALLER_PACKAGES.all { lockedApps.contains(it) }
     }
 
     // Logic to refresh all system-dependent states
@@ -81,28 +78,6 @@ fun AppLockerMainScreen(
         canDrawOverlays = Settings.canDrawOverlays(context)
         isAdminActive = dpm.isAdminActive(adminComponent)
         lockedApps = prefs.getLockedPackages()
-    }
-
-    // Enable Defaults & Initial Check
-    LaunchedEffect(key1 = Unit) {
-        val currentLocked = prefs.getLockedPackages()
-        if (!currentLocked.contains(settingsPackage)) {
-            prefs.setAppLocked(settingsPackage, true)
-            updateSystemStates()
-        }
-    }
-
-    LaunchedEffect(key1 = Unit) {
-        val currentLocked = prefs.getLockedPackages()
-        // If the app is opened for the first time (or criticals are missing), lock them
-        if (!currentLocked.contains(myPackage) || !currentLocked.contains(settingsPackage)) {
-            prefs.setAppLocked(myPackage, true)
-            prefs.setAppLocked(settingsPackage, true)
-            uninstallerPackages.forEach { prefs.setAppLocked(it, true) }
-
-            // Refresh local state
-            lockedApps = prefs.getLockedPackages()
-        }
     }
 
     // Refresh when user returns from Settings
@@ -150,11 +125,16 @@ fun AppLockerMainScreen(
             LazyColumn(modifier = Modifier.weight(1f)) {
                 item {
                     SystemProtectionSection(
+                        isSettingsLocked = isSettingsLocked,
                         isUninstallLocked = isUninstallLocked,
                         isAdminActive = isAdminActive,
                         isSelfLockEnabled = isSelfLockEnabled,
+                        onSettingsLockToggle = { shouldLock ->
+                            prefs.setAppLocked(ANDROID_SETTINGS_PACKAGE, shouldLock)
+                            lockedApps = prefs.getLockedPackages()
+                        },
                         onUninstallLockChanged = { shouldLock ->
-                            uninstallerPackages.forEach { pkg ->
+                            ANDROID_UNINSTALLER_PACKAGES.forEach { pkg ->
                                 prefs.setAppLocked(
                                     pkg,
                                     shouldLock
@@ -177,14 +157,14 @@ fun AppLockerMainScreen(
                                     }
                                 context.startActivity(intent)
                             } else {
-                                // For security, you might want to trigger a biometric check here
-                                // before allowing deactivation!
+                                // TODO: For security, trigger a biometric check here.
+                                //  before allowing deactivation!
                                 dpm.removeActiveAdmin(adminComponent)
                                 isAdminActive = false
                             }
                         },
                         onSelfLockToggle = { shouldLock ->
-                            prefs.setAppLocked(myPackage, shouldLock)
+                            prefs.setAppLocked(KURA_PACKAGE, shouldLock)
                             lockedApps = prefs.getLockedPackages()
                         }
                     )

@@ -18,9 +18,11 @@ fun SystemProtectionSection(
     isUninstallLocked: Boolean,
     isAdminActive: Boolean,
     isSelfLockEnabled: Boolean,
+    isSettingsLocked: Boolean, // Add this parameter
     onUninstallLockChanged: (Boolean) -> Unit,
     onAdminToggle: (Boolean) -> Unit,
     onSelfLockToggle: (Boolean) -> Unit,
+    onSettingsLockToggle: (Boolean) -> Unit, // Add this callback
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier) {
@@ -37,7 +39,17 @@ fun SystemProtectionSection(
             )
         ) {
             Column {
-                // 1. Anti-Uninstall (The Package Installer Lock)
+                // 1. Lock System Settings
+                ProtectionToggleRow(
+                    title = stringResource(R.string.lock_settings),
+                    description = stringResource(R.string.lock_settings_desc),
+                    checked = isSettingsLocked,
+                    onCheckedChange = onSettingsLockToggle
+                )
+
+                HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
+
+                // 2. Anti-Uninstall (Package Installers)
                 ProtectionToggleRow(
                     title = stringResource(R.string.lock_uninstallers),
                     description = stringResource(R.string.lock_uninstallers_desc),
@@ -47,7 +59,7 @@ fun SystemProtectionSection(
 
                 HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
 
-                // 2. Device Admin (The "Greyed-out" Uninstall Button)
+                // 3. Device Admin
                 ProtectionToggleRow(
                     title = stringResource(R.string.advanced_protection),
                     description = stringResource(R.string.advanced_protection_desc),
@@ -57,7 +69,7 @@ fun SystemProtectionSection(
 
                 HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
 
-                // 3. Self-Lock (Locking this app itself)
+                // 4. Self-Lock
                 ProtectionToggleRow(
                     title = stringResource(R.string.self_lock),
                     description = stringResource(R.string.self_lock_desc),

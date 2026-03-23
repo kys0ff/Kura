@@ -5,7 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import off.kys.kura.core.designsystem.theme.KuraTheme
-import off.kys.kura.features.main.screen.AppLockerMainScreen
+import off.kys.kura.features.main.screen.MainScreen
 
 class MainActivity : ComponentActivity() {
 
@@ -14,7 +14,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             KuraTheme {
-                AppLockerMainScreen()
+                MainScreen()
             }
         }
     }
