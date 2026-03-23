@@ -61,10 +61,10 @@ fun MainScreen(
     var canDrawOverlays by remember { mutableStateOf(Settings.canDrawOverlays(context)) }
 
     // --- PROTECTION STATE ---
-    var isSettingsLocked by remember { mutableStateOf(prefs.isAppLocked(ANDROID_SETTINGS_PACKAGE)) }
     var lockedApps by remember { mutableStateOf(prefs.getLockedPackages()) }
     var isAdminActive by remember { mutableStateOf(dpm.isAdminActive(adminComponent)) }
 
+    val isSettingsLocked = remember(lockedApps) { lockedApps.contains(ANDROID_SETTINGS_PACKAGE) }
     // Self-lock is just checking if our own package is in the locked list
     val isSelfLockEnabled = remember(lockedApps) { lockedApps.contains(KURA_PACKAGE) }
 
@@ -74,7 +74,6 @@ fun MainScreen(
 
     // Logic to refresh all system-dependent states
     fun updateSystemStates() {
-        isSettingsLocked = prefs.isAppLocked(ANDROID_SETTINGS_PACKAGE)
         isAccessibilityEnabled = context.isAccessibilityServiceEnabled()
         canDrawOverlays = Settings.canDrawOverlays(context)
         isAdminActive = dpm.isAdminActive(adminComponent)

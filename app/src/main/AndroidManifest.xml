@@ -23,7 +23,9 @@
         android:theme="@style/Theme.Kura">
         <activity
             android:name=".features.main.activity.MainActivity"
+            android:excludeFromRecents="true"
             android:exported="true"
+            android:noHistory="true"
             android:theme="@style/Theme.Kura">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -37,6 +39,7 @@
             android:configChanges="orientation|screenSize|keyboardHidden"
             android:excludeFromRecents="true"
             android:launchMode="singleTask"
+            android:noHistory="true"
             android:theme="@style/Theme.AppLocker" />
 
         <service
@@ -62,10 +65,10 @@
 
         <receiver
             android:name=".core.admin.LockerAdminReceiver"
-            android:label="@string/device_admin_label"
             android:description="@string/device_admin_description"
-            android:permission="android.permission.BIND_DEVICE_ADMIN"
-            android:exported="true">
+            android:exported="true"
+            android:label="@string/device_admin_label"
+            android:permission="android.permission.BIND_DEVICE_ADMIN">
             <meta-data
                 android:name="android.app.device_admin"
                 android:resource="@xml/device_admin_receiver" />
