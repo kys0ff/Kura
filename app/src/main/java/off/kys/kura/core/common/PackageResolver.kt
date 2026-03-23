@@ -6,7 +6,7 @@ import android.content.pm.PackageManager
 import off.kys.kura.core.common.constants.KURA_PACKAGE
 import off.kys.kura.core.data.model.AppInfo
 
-class PackageManagerUtils(context: Context) {
+class PackageResolver(context: Context) {
     private val pm = context.packageManager
 
     fun getAppName(packageName: String): String? = try {

@@ -3,7 +3,7 @@ package off.kys.kura.core.registry
 import android.content.Context
 import androidx.core.content.edit
 
-class AppLockRegistry(context: Context) {
+class LockSessionManager(context: Context) {
     private val prefs = context.getSharedPreferences("locker_settings", Context.MODE_PRIVATE)
 
     companion object {

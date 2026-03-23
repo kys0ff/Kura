@@ -5,7 +5,6 @@ package off.kys.kura.features.main.screen
 import android.annotation.SuppressLint
 import android.app.admin.DevicePolicyManager
 import android.content.ComponentName
-import android.content.Context
 import android.content.Intent
 import android.provider.Settings
 import androidx.compose.foundation.layout.Column
@@ -21,10 +20,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -33,65 +29,30 @@ import androidx.core.net.toUri
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import off.kys.kura.R
 import off.kys.kura.core.admin.LockerAdminReceiver
-import off.kys.kura.core.common.PackageManagerUtils
-import off.kys.kura.core.common.constants.ANDROID_SETTINGS_PACKAGE
-import off.kys.kura.core.common.constants.ANDROID_UNINSTALLER_PACKAGES
-import off.kys.kura.core.common.constants.KURA_PACKAGE
-import off.kys.kura.core.common.extensions.isAccessibilityServiceEnabled
-import off.kys.kura.core.registry.AppLockRegistry
+import off.kys.kura.features.main.event.MainUiEvent
 import off.kys.kura.features.main.screen.components.AppItemRow
 import off.kys.kura.features.main.screen.components.PermissionCard
 import off.kys.kura.features.main.screen.components.SystemProtectionSection
+import off.kys.kura.features.main.viewmodel.MainViewModel
 import org.koin.compose.koinInject
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
-    context: Context = LocalContext.current,
-    pmUtils: PackageManagerUtils = koinInject(),
-    prefs: AppLockRegistry = koinInject()
+    viewModel: MainViewModel = koinInject()
 ) {
-    // --- SYSTEM UTILS ---
-    val dpm =
-        remember { context.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager }
+    val context = LocalContext.current
+    val state = viewModel.uiState
     val adminComponent = remember { ComponentName(context, LockerAdminReceiver::class.java) }
 
-    // --- PERMISSION STATE ---
-    var isAccessibilityEnabled by remember { mutableStateOf(context.isAccessibilityServiceEnabled()) }
-    var canDrawOverlays by remember { mutableStateOf(Settings.canDrawOverlays(context)) }
-
-    // --- PROTECTION STATE ---
-    var lockedApps by remember { mutableStateOf(prefs.getLockedPackages()) }
-    var isAdminActive by remember { mutableStateOf(dpm.isAdminActive(adminComponent)) }
-
-    val isSettingsLocked = remember(lockedApps) { lockedApps.contains(ANDROID_SETTINGS_PACKAGE) }
-    // Self-lock is just checking if our own package is in the locked list
-    val isSelfLockEnabled = remember(lockedApps) { lockedApps.contains(KURA_PACKAGE) }
-
-    val isUninstallLocked = remember(lockedApps) {
-        ANDROID_UNINSTALLER_PACKAGES.all { lockedApps.contains(it) }
-    }
-
-    // Logic to refresh all system-dependent states
-    fun updateSystemStates() {
-        isAccessibilityEnabled = context.isAccessibilityServiceEnabled()
-        canDrawOverlays = Settings.canDrawOverlays(context)
-        isAdminActive = dpm.isAdminActive(adminComponent)
-        lockedApps = prefs.getLockedPackages()
-    }
-
-    // Refresh when user returns from Settings
-    LifecycleResumeEffect(key1 = Unit) {
-        updateSystemStates()
+    // Sync state when returning to app
+    LifecycleResumeEffect(Unit) {
+        viewModel.onEvent(MainUiEvent.RefreshSystemStates)
         onPauseOrDispose {}
     }
 
     Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(stringResource(R.string.app_name)) },
-            )
-        }
+        topBar = { TopAppBar(title = { Text(stringResource(R.string.app_name)) }) }
     ) { contentPadding ->
         Column(
             modifier = Modifier
@@ -99,16 +60,12 @@ fun MainScreen(
                 .padding(contentPadding)
                 .padding(8.dp)
         ) {
-            // --- PERMISSION SECTION ---
-            if (!isAccessibilityEnabled || !canDrawOverlays) {
-                Spacer(modifier = Modifier.height(16.dp))
-
+            if (!state.isAccessibilityEnabled || !state.canDrawOverlays) {
                 PermissionCard(
-                    isAccessibilityEnabled = isAccessibilityEnabled,
-                    canDrawOverlays = canDrawOverlays,
+                    isAccessibilityEnabled = state.isAccessibilityEnabled,
+                    canDrawOverlays = state.canDrawOverlays,
                     onGrantAccessibility = {
-                        val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
-                        context.startActivity(intent)
+                        context.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
                     },
                     onGrantOverlay = {
                         val intent = Intent(
@@ -118,29 +75,19 @@ fun MainScreen(
                         context.startActivity(intent)
                     }
                 )
-
                 Spacer(modifier = Modifier.height(20.dp))
             }
 
             LazyColumn(modifier = Modifier.weight(1f)) {
                 item {
                     SystemProtectionSection(
-                        isSettingsLocked = isSettingsLocked,
-                        isUninstallLocked = isUninstallLocked,
-                        isAdminActive = isAdminActive,
-                        isSelfLockEnabled = isSelfLockEnabled,
-                        onSettingsLockToggle = { shouldLock ->
-                            prefs.setAppLocked(ANDROID_SETTINGS_PACKAGE, shouldLock)
-                            lockedApps = prefs.getLockedPackages()
-                        },
+                        isSettingsLocked = state.isSettingsLocked,
+                        isUninstallLocked = state.isUninstallLocked,
+                        isAdminActive = state.isAdminActive,
+                        isSelfLockEnabled = state.isSelfLockEnabled,
+                        onSettingsLockToggle = { viewModel.onEvent(MainUiEvent.ToggleSettingsLock(it)) },
                         onUninstallLockChanged = { shouldLock ->
-                            ANDROID_UNINSTALLER_PACKAGES.forEach { pkg ->
-                                prefs.setAppLocked(
-                                    pkg,
-                                    shouldLock
-                                )
-                            }
-                            lockedApps = prefs.getLockedPackages()
+                            viewModel.onEvent(MainUiEvent.ToggleUninstallLock(shouldLock))
                         },
                         onAdminToggle = { shouldActivate ->
                             if (shouldActivate) {
@@ -157,21 +104,14 @@ fun MainScreen(
                                     }
                                 context.startActivity(intent)
                             } else {
-                                // TODO: For security, trigger a biometric check here.
-                                //  before allowing deactivation!
-                                dpm.removeActiveAdmin(adminComponent)
-                                isAdminActive = false
+                                viewModel.onEvent(MainUiEvent.DeactivateAdmin)
                             }
                         },
-                        onSelfLockToggle = { shouldLock ->
-                            prefs.setAppLocked(KURA_PACKAGE, shouldLock)
-                            lockedApps = prefs.getLockedPackages()
-                        }
+                        onSelfLockToggle = { viewModel.onEvent(MainUiEvent.ToggleSelfLock(it)) }
                     )
                     Spacer(modifier = Modifier.height(24.dp))
                 }
 
-                // --- APP LIST HEADER ---
                 item {
                     Text(
                         text = stringResource(R.string.select_apps_to_lock),
@@ -181,15 +121,12 @@ fun MainScreen(
                     )
                 }
 
-                // --- APP LIST ---
-                val installedApps = pmUtils.getInstalledApps()
-                items(installedApps) { app ->
+                items(state.installedApps) { app ->
                     AppItemRow(
                         app = app,
-                        isLocked = lockedApps.contains(app.packageName),
+                        isLocked = state.lockedApps.contains(app.packageName),
                         onToggle = { isChecked ->
-                            prefs.setAppLocked(app.packageName, isChecked)
-                            lockedApps = prefs.getLockedPackages()
+                            viewModel.onEvent(MainUiEvent.ToggleAppLock(app.packageName, isChecked))
                         }
                     )
                 }

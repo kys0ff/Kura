@@ -11,14 +11,14 @@ import android.content.IntentFilter
 import android.os.Build
 import android.util.Log
 import android.view.accessibility.AccessibilityEvent
-import off.kys.kura.core.registry.AppLockRegistry
+import off.kys.kura.core.registry.LockSessionManager
 import off.kys.kura.features.lock.activity.LockActivity
 import org.koin.android.ext.android.inject
 
 private const val TAG = "LockerAccessibilityService"
 
 class LockerAccessibilityService : AccessibilityService() {
-    private val registry: AppLockRegistry by inject()
+    private val registry: LockSessionManager by inject()
     private val screenOffReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             Log.d(TAG, "onReceive: Resetting all sessions")

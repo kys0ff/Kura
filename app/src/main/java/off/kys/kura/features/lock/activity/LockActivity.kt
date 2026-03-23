@@ -15,17 +15,17 @@ import androidx.compose.ui.Modifier
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentActivity
 import off.kys.kura.R
-import off.kys.kura.core.common.PackageManagerUtils
+import off.kys.kura.core.common.PackageResolver
 import off.kys.kura.core.designsystem.theme.KuraTheme
-import off.kys.kura.core.registry.AppLockRegistry
+import off.kys.kura.core.registry.LockSessionManager
 import off.kys.kura.features.lock.services.LockerAccessibilityService
 import org.koin.android.ext.android.inject
 
 private const val TAG = "LockActivity"
 
 class LockActivity : FragmentActivity() {
-    private val pmUtils by inject<PackageManagerUtils>()
-    private val registry by inject<AppLockRegistry>()
+    private val pmUtils by inject<PackageResolver>()
+    private val registry by inject<LockSessionManager>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
