@@ -3,13 +3,20 @@ package off.kys.kura.features.lock.activity
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricPrompt
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.Modifier
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentActivity
 import off.kys.kura.R
 import off.kys.kura.core.common.PackageManagerUtils
+import off.kys.kura.core.designsystem.theme.KuraTheme
 import off.kys.kura.core.registry.AppLockRegistry
 import off.kys.kura.features.lock.services.LockerAccessibilityService
 import org.koin.android.ext.android.inject
@@ -23,6 +30,16 @@ class LockActivity : FragmentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        setContent {
+            KuraTheme {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(MaterialTheme.colorScheme.background)
+                )
+            }
+        }
 
         // Ensure the activity doesn't show in Recents
         val targetPackage = intent.getStringExtra("TARGET_PACKAGE") ?: run {

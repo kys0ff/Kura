@@ -1,3 +1,5 @@
 package off.kys.kura.core.common.constants
 
-const val KURA_PACKAGE = "off.kys.kura"
+import off.kys.kura.BuildConfig
+
+const val KURA_PACKAGE = BuildConfig.APPLICATION_ID

@@ -64,6 +64,9 @@ class LockerAccessibilityService : AccessibilityService() {
         if (event.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
             val packageName = event.packageName?.toString() ?: return
 
+            if (packageName == "off.kys.kura.debug")
+                Log.d(TAG, "onAccessibilityEvent: Self app detected")
+
             // 1. If this app is ALREADY unlocked and the user is still using it,
             // refresh the timestamp so the 5-minute timer "restarts" now.
             if (packageName == lastUnlockedPackage) {
@@ -73,6 +76,11 @@ class LockerAccessibilityService : AccessibilityService() {
             }
 
             // 2. Standard Lock Logic
+            Log.d(TAG, "onAccessibilityEvent: $packageName lock status: ${registry.isAppLocked(packageName)}")
+            Log.d(TAG, "onAccessibilityEvent: $packageName has valid session: ${registry.isSessionValid(packageName)}")
+            Log.d(TAG, "onAccessibilityEvent: $packageName lastUnlockedPackage: $lastUnlockedPackage")
+            Log.d(TAG, "onAccessibilityEvent: $packageName lastUnlockTime: $lastUnlockTime")
+
             if (registry.isAppLocked(packageName)) {
                 // Check if the PREVIOUS session actually expired
                 if (!registry.isSessionValid(packageName)) {
@@ -92,8 +100,16 @@ class LockerAccessibilityService : AccessibilityService() {
 
     private fun launchLockScreen(packageName: String) {
         val intent = Intent(this, LockActivity::class.java).apply {
-            // Use NEW_TASK but avoid CLEAR_TASK to keep the Biometric prompt stable
-            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+            // FLAG_ACTIVITY_NEW_TASK is required from a Service.
+            // CLEAR_TOP combined with singleInstance ensures we don't stack locks.
+            // EXCLUDE_FROM_RECENTS hides the lock screen from the multitasking menu.
+            // NO_ANIMATION makes the transition instant, preventing lifecycle lag.
+            addFlags(
+                Intent.FLAG_ACTIVITY_NEW_TASK or
+                        Intent.FLAG_ACTIVITY_CLEAR_TOP or
+                        Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS or
+                        Intent.FLAG_ACTIVITY_NO_ANIMATION
+            )
             putExtra("TARGET_PACKAGE", packageName)
         }
         startActivity(intent)

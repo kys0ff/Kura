@@ -23,9 +23,7 @@
         android:theme="@style/Theme.Kura">
         <activity
             android:name=".features.main.activity.MainActivity"
-            android:excludeFromRecents="true"
             android:exported="true"
-            android:noHistory="true"
             android:theme="@style/Theme.Kura">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -38,9 +36,12 @@
             android:name=".features.lock.activity.LockActivity"
             android:configChanges="orientation|screenSize|keyboardHidden"
             android:excludeFromRecents="true"
-            android:launchMode="singleTask"
+            android:launchMode="singleInstance"
             android:noHistory="true"
-            android:theme="@style/Theme.AppLocker" />
+            android:stateNotNeeded="true"
+            android:taskAffinity=""
+            android:theme="@style/Theme.Kura.TransparentLock"
+            android:windowSoftInputMode="stateHidden" />
 
         <service
             android:name=".features.lock.services.LockerAccessibilityService"
