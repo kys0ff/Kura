@@ -85,9 +85,15 @@ class LockActivity : FragmentActivity() {
 
     private fun resumeTargetApp(packageName: String) {
         val launchIntent = packageManager.getLaunchIntentForPackage(packageName)
+
         if (launchIntent != null) {
-            // These flags ensure we bring the EXISTING task to the front
-            // instead of starting a fresh instance or a new task entry.
+            // 1. STRIP THE RESET FLAG (Crucial for preventing data loss)
+            // getLaunchIntentForPackage includes FLAG_ACTIVITY_RESET_TASK_IF_NEEDED by default.
+            // We invert (.inv()) and use 'and' to remove this specific flag so the app doesn't reset.
+            launchIntent.flags = launchIntent.flags and Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED.inv()
+
+            // 2. Add flags to purely bring the existing task to the front
+            // NEW_TASK brings the task up. SINGLE_TOP prevents the root activity from recreating.
             launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
 
             try {
@@ -98,10 +104,10 @@ class LockActivity : FragmentActivity() {
             }
         }
 
-        // 4. Finish the LockActivity
+        // 3. Finish the LockActivity
         finish()
 
-        // 5. Remove the "closing" animation so it looks like the LockActivity
+        // 4. Remove the "closing" animation so it looks like the LockActivity
         // simply vanished, revealing the app instantly.
         @Suppress("DEPRECATION")
         overridePendingTransition(0, 0)

@@ -35,4 +35,13 @@ class AppLockRegistry(context: Context) {
     fun saveUnlockTimestamp(packageName: String) {
         prefs.edit { putLong("unlock_$packageName", System.currentTimeMillis()) }
     }
+
+    fun isSessionValid(packageName: String): Boolean {
+        val lastActive = prefs.getLong("unlock_$packageName", 0L)
+        val fiveMinutes = 5 * 60 * 1000L
+
+        // If the difference between NOW and the LAST time we saw the app
+        // is less than 5 minutes, it's still "unlocked".
+        return (System.currentTimeMillis() - lastActive) < fiveMinutes
+    }
 }

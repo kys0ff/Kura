@@ -8,9 +8,10 @@ import android.content.Intent
 import android.view.accessibility.AccessibilityEvent
 import off.kys.kura.core.registry.AppLockRegistry
 import off.kys.kura.features.lock.activity.LockActivity
+import org.koin.android.ext.android.inject
 
 class LockerAccessibilityService : AccessibilityService() {
-    private lateinit var prefs: AppLockRegistry
+    private val registry: AppLockRegistry by inject()
     private var lastPackageName: String? = null
 
     // Track the package we just unlocked to avoid splash screen loops
@@ -19,31 +20,28 @@ class LockerAccessibilityService : AccessibilityService() {
         var lastUnlockTime: Long = 0
     }
 
-    override fun onServiceConnected() {
-        prefs = AppLockRegistry(this)
-    }
-
     override fun onAccessibilityEvent(event: AccessibilityEvent) {
         if (event.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
             val packageName = event.packageName?.toString() ?: return
 
-            // 1. Internal transition check (Splash -> Main)
-            // If the package is the same as the one we just processed, don't re-check
-            if (packageName == lastPackageName) return
-
-            // 2. Grace Period Check
-            // If we unlocked this specific app in the last 3 seconds, ignore window changes
-            val isInGracePeriod = packageName == lastUnlockedPackage &&
-                    (System.currentTimeMillis() - lastUnlockTime) < 3000
-
-            if (isInGracePeriod) {
-                lastPackageName = packageName
+            // 1. If this app is ALREADY unlocked and the user is still using it,
+            // refresh the timestamp so the 5-minute timer "restarts" now.
+            if (packageName == lastUnlockedPackage) {
+                lastUnlockTime = System.currentTimeMillis()
+                registry.saveUnlockTimestamp(packageName) // Keeps the session alive
                 return
             }
 
-            // 4. Check if locked (this includes your 5-minute logic)
-            if (prefs.isAppLocked(packageName)) {
-                launchLockScreen(packageName)
+            // 2. Standard Lock Logic
+            if (registry.isAppLocked(packageName)) {
+                // Check if the PREVIOUS session actually expired
+                if (!registry.isSessionValid(packageName)) {
+                    launchLockScreen(packageName)
+                } else {
+                    // Session is still valid, update it because they just switched back to it
+                    lastUnlockedPackage = packageName
+                    lastUnlockTime = System.currentTimeMillis()
+                }
             }
 
             lastPackageName = packageName

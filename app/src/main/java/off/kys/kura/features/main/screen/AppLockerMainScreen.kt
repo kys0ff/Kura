@@ -178,12 +178,10 @@ fun AppLockerMainScreen(
                 text = stringResource(R.string.select_apps_to_lock),
                 style = MaterialTheme.typography.titleMedium
             )
-
             LazyColumn(modifier = Modifier.weight(1f)) {
                 items(installedApps) { app ->
-                    // 3. Logic: Settings and our own App should be "Locked" by default and hard to disable
-                    val isCritical =
-                        app.packageName == settingsPackage || app.packageName == myPackage
+                    // Logic: Settings and our own App should be "Locked" by default and hard to disable
+                    val isCritical = app.packageName == settingsPackage || app.packageName == myPackage
 
                     AppItemRow(
                         app = app,
