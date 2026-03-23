@@ -73,7 +73,6 @@ fun MainScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(contentPadding)
-                .padding(8.dp)
         ) {
             if (!state.isAccessibilityEnabled || !state.canDrawOverlays) {
                 PermissionCard(
@@ -141,14 +140,16 @@ fun MainScreen(
                             modifier = Modifier.weight(1f)
                         )
 
-                        TextButton(onClick = {
-                            if (areAllLocked) {
-                                // Logic for unlocking all (needs to be handled in ViewModel)
-                                viewModel.onEvent(MainUiEvent.UnlockAllApps)
-                            } else {
-                                viewModel.onEvent(MainUiEvent.LockAllApps)
+                        TextButton(
+                            onClick = {
+                                if (areAllLocked) {
+                                    // Logic for unlocking all (needs to be handled in ViewModel)
+                                    viewModel.onEvent(MainUiEvent.UnlockAllApps)
+                                } else {
+                                    viewModel.onEvent(MainUiEvent.LockAllApps)
+                                }
                             }
-                        }) {
+                        ) {
                             Text(
                                 if (areAllLocked) stringResource(R.string.unlock_all)
                                 else stringResource(R.string.lock_all)
