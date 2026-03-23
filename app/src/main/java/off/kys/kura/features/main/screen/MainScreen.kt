@@ -3,22 +3,16 @@ package off.kys.kura.features.main.screen
 import android.content.Context
 import android.content.Intent
 import android.provider.Settings
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -27,7 +21,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -40,6 +33,7 @@ import off.kys.kura.core.common.extensions.isAccessibilityServiceEnabled
 import off.kys.kura.core.registry.AppLockRegistry
 import off.kys.kura.features.main.screen.components.AppItemRow
 import off.kys.kura.features.main.screen.components.PermissionCard
+import off.kys.kura.features.main.screen.components.SystemProtectionSection
 import org.koin.compose.koinInject
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -130,40 +124,12 @@ fun AppLockerMainScreen(
                 Spacer(modifier = Modifier.height(20.dp))
             }
 
-            // --- SYSTEM PROTECTION SECTION ---
-            Text(
-                text = stringResource(R.string.system_protection),
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.primary
-            )
 
-            Card(
-                modifier = Modifier.padding(vertical = 8.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-                )
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = stringResource(R.string.lock_uninstallers),
-                            style = MaterialTheme.typography.bodyLarge
-                        )
-                        Text(
-                            text = stringResource(R.string.lock_uninstallers_desc),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                    Switch(
-                        checked = isUninstallLocked,
-                        onCheckedChange = { shouldLock ->
+            LazyColumn(modifier = Modifier.weight(1f)) {
+                item {
+                    SystemProtectionSection(
+                        isUninstallLocked = isUninstallLocked,
+                        onLockChanged = { shouldLock ->
                             uninstallerPackages.forEach { pkg ->
                                 prefs.setAppLocked(pkg, shouldLock)
                             }
@@ -171,14 +137,16 @@ fun AppLockerMainScreen(
                         }
                     )
                 }
-            }
 
-            // --- APP LIST SECTION ---
-            Text(
-                text = stringResource(R.string.select_apps_to_lock),
-                style = MaterialTheme.typography.titleMedium
-            )
-            LazyColumn(modifier = Modifier.weight(1f)) {
+                item {
+                    // --- APP LIST SECTION ---
+                    Text(
+                        text = stringResource(R.string.select_apps_to_lock),
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+
                 items(installedApps) { app ->
                     // Logic: Settings and our own App should be "Locked" by default and hard to disable
                     val isCritical = app.packageName == settingsPackage || app.packageName == myPackage
