@@ -99,10 +99,10 @@ fun MainScreen(
                 .padding(contentPadding)
                 .padding(8.dp)
         ) {
-            Spacer(modifier = Modifier.height(16.dp))
-
             // --- PERMISSION SECTION ---
             if (!isAccessibilityEnabled || !canDrawOverlays) {
+                Spacer(modifier = Modifier.height(16.dp))
+
                 PermissionCard(
                     isAccessibilityEnabled = isAccessibilityEnabled,
                     canDrawOverlays = canDrawOverlays,
