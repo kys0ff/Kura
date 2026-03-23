@@ -24,4 +24,6 @@
     <string name="protection_enabled">Advanced Protection Activated</string>
     <string name="lock_settings">Lock System Settings</string>
     <string name="lock_settings_desc">Prevents access to Android Settings to stop users from disabling the locker or clearing data.</string>
+    <string name="unlock_all">Unlock All</string>
+    <string name="lock_all">Lock All</string>
 </resources>

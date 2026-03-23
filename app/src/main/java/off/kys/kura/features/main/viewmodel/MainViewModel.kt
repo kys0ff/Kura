@@ -47,23 +47,45 @@ class MainViewModel(
                 lockManager.setAppLocked(event.packageName, event.shouldLock)
                 uiState = uiState.copy(lockedApps = lockManager.getLockedPackages())
             }
+
             is MainUiEvent.ToggleSettingsLock -> {
                 lockManager.setAppLocked(ANDROID_SETTINGS_PACKAGE, event.shouldLock)
                 uiState = uiState.copy(lockedApps = lockManager.getLockedPackages())
             }
+
             is MainUiEvent.ToggleUninstallLock -> {
-                ANDROID_UNINSTALLER_PACKAGES.forEach { lockManager.setAppLocked(it, event.shouldLock) }
+                ANDROID_UNINSTALLER_PACKAGES.forEach {
+                    lockManager.setAppLocked(
+                        it,
+                        event.shouldLock
+                    )
+                }
                 uiState = uiState.copy(lockedApps = lockManager.getLockedPackages())
             }
+
             is MainUiEvent.ToggleSelfLock -> {
                 lockManager.setAppLocked(KURA_PACKAGE, event.shouldLock)
                 uiState = uiState.copy(lockedApps = lockManager.getLockedPackages())
             }
+
             is MainUiEvent.DeactivateAdmin -> {
-                val dpm = context.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+                val dpm =
+                    context.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
                 val adminComponent = ComponentName(context, LockerAdminReceiver::class.java)
                 dpm.removeActiveAdmin(adminComponent)
                 uiState = uiState.copy(isAdminActive = false)
+            }
+
+            is MainUiEvent.LockAllApps -> {
+                val allPackageNames = uiState.installedApps.map { it.packageName }
+                allPackageNames.forEach { lockManager.setAppLocked(it, true) }
+                uiState = uiState.copy(lockedApps = lockManager.getLockedPackages())
+            }
+
+            is MainUiEvent.UnlockAllApps -> {
+                val allPackagesNames = uiState.installedApps.map { it.packageName }
+                allPackagesNames.forEach { lockManager.setAppLocked(it, false) }
+                uiState = uiState.copy(lockedApps = lockManager.getLockedPackages())
             }
         }
     }
@@ -71,7 +93,7 @@ class MainViewModel(
     private fun updateSystemStates(context: Context) {
         val dpm = context.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
         val adminComponent = ComponentName(context, LockerAdminReceiver::class.java)
-        
+
         uiState = uiState.copy(
             isAccessibilityEnabled = context.isAccessibilityServiceEnabled(),
             canDrawOverlays = Settings.canDrawOverlays(context),

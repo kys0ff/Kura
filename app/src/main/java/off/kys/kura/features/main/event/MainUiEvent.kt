@@ -7,4 +7,6 @@ sealed class MainUiEvent {
     data class ToggleSelfLock(val shouldLock: Boolean) : MainUiEvent()
     object RefreshSystemStates : MainUiEvent()
     object DeactivateAdmin : MainUiEvent()
+    object LockAllApps : MainUiEvent()
+    object UnlockAllApps : MainUiEvent()
 }

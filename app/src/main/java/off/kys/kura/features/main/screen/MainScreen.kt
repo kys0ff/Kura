@@ -8,8 +8,10 @@ import android.content.ComponentName
 import android.content.Intent
 import android.provider.Settings
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -18,10 +20,12 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
@@ -45,6 +49,7 @@ fun MainScreen(
 ) {
     val context = LocalContext.current
     val state = viewModel.uiState
+    val areAllLocked = state.areAllLocked
     val adminComponent = remember { ComponentName(context, LockerAdminReceiver::class.java) }
 
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
@@ -123,12 +128,33 @@ fun MainScreen(
                 }
 
                 item {
-                    Text(
-                        text = stringResource(R.string.select_apps_to_lock),
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.padding(bottom = 8.dp)
-                    )
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = stringResource(R.string.select_apps_to_lock),
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.weight(1f)
+                        )
+
+                        TextButton(onClick = {
+                            if (areAllLocked) {
+                                // Logic for unlocking all (needs to be handled in ViewModel)
+                                viewModel.onEvent(MainUiEvent.UnlockAllApps)
+                            } else {
+                                viewModel.onEvent(MainUiEvent.LockAllApps)
+                            }
+                        }) {
+                            Text(
+                                if (areAllLocked) stringResource(R.string.unlock_all)
+                                else stringResource(R.string.lock_all)
+                            )
+                        }
+                    }
                 }
 
                 items(state.installedApps) { app ->

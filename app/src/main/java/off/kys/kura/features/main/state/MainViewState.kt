@@ -15,4 +15,6 @@ data class MainViewState(
     val isSettingsLocked: Boolean = lockedApps.contains(ANDROID_SETTINGS_PACKAGE)
     val isSelfLockEnabled: Boolean = lockedApps.contains(KURA_PACKAGE)
     val isUninstallLocked: Boolean = ANDROID_UNINSTALLER_PACKAGES.all { lockedApps.contains(it) }
+    val areAllLocked: Boolean =
+        installedApps.isNotEmpty() && installedApps.all { lockedApps.contains(it.packageName) }
 }
