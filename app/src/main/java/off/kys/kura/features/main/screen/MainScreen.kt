@@ -19,9 +19,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -45,6 +47,8 @@ fun MainScreen(
     val state = viewModel.uiState
     val adminComponent = remember { ComponentName(context, LockerAdminReceiver::class.java) }
 
+    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+
     // Sync state when returning to app
     LifecycleResumeEffect(Unit) {
         viewModel.onEvent(MainUiEvent.RefreshSystemStates)
@@ -52,7 +56,13 @@ fun MainScreen(
     }
 
     Scaffold(
-        topBar = { TopAppBar(title = { Text(stringResource(R.string.app_name)) }) }
+        topBar = {
+            TopAppBar(
+                title = { Text(stringResource(R.string.app_name)) },
+                scrollBehavior = scrollBehavior
+            )
+        },
+        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
     ) { contentPadding ->
         Column(
             modifier = Modifier
