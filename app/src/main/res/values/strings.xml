@@ -14,4 +14,12 @@
     <string name="lock_uninstallers">Anti-Uninstall Protection</string>
     <string name="lock_uninstallers_desc">Prevents unauthorized deletion of apps by requiring biometrics to access the Package Installer.</string>
     <string name="critical_apps">Critical apps:</string>
+    <string name="advanced_protection">Advanced Uninstall Protection</string>
+    <string name="advanced_protection_desc">Requires Device Admin to disable the "Uninstall" button in Android Settings.</string>
+
+    <string name="self_lock">Lock Kura Locker</string>
+    <string name="self_lock_desc">Requires biometrics to open this app so others can\'t change your security settings.</string>
+    <string name="device_admin_label">Kura Shield Protection</string>
+    <string name="device_admin_description">Enabling this prevents Kura Locker from being uninstalled or stopped without your permission. This provides the highest level of security for your locked apps.</string>
+    <string name="protection_enabled">Advanced Protection Activated</string>
 </resources>

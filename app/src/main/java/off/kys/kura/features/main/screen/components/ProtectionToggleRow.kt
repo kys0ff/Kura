@@ -11,31 +11,33 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import off.kys.kura.core.data.model.AppInfo
 
 @Composable
-fun AppItemRow(
-    app: AppInfo,
-    isLocked: Boolean,
-    onToggle: (Boolean) -> Unit
+fun ProtectionToggleRow(
+    title: String,
+    description: String,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp),
+            .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Column(modifier = Modifier.weight(1f)) {
-            Text(app.name, style = MaterialTheme.typography.bodyLarge)
-            Text(app.packageName, style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+            Text(text = title, style = MaterialTheme.typography.bodyLarge)
+            Text(
+                text = description,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
-
         Switch(
-            checked = isLocked,
-            onCheckedChange = { onToggle(it) },
+            checked = checked,
+            onCheckedChange = onCheckedChange
         )
     }
 }

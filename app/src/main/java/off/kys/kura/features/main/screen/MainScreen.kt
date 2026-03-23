@@ -1,5 +1,8 @@
 package off.kys.kura.features.main.screen
 
+import android.annotation.SuppressLint
+import android.app.admin.DevicePolicyManager
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.provider.Settings
@@ -28,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import off.kys.kura.R
+import off.kys.kura.core.admin.LockerAdminReceiver
 import off.kys.kura.core.common.PackageManagerUtils
 import off.kys.kura.core.common.extensions.isAccessibilityServiceEnabled
 import off.kys.kura.core.registry.AppLockRegistry
@@ -36,6 +40,7 @@ import off.kys.kura.features.main.screen.components.PermissionCard
 import off.kys.kura.features.main.screen.components.SystemProtectionSection
 import org.koin.compose.koinInject
 
+@SuppressLint("LocalContextGetResourceValueCall")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppLockerMainScreen(
@@ -50,25 +55,43 @@ fun AppLockerMainScreen(
         listOf("com.google.android.packageinstaller", "com.android.packageinstaller")
     }
 
-    // State for permissions
+    // --- SYSTEM UTILS ---
+    val dpm =
+        remember { context.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager }
+    val adminComponent = remember { ComponentName(context, LockerAdminReceiver::class.java) }
+
+    // --- PERMISSION STATE ---
     var isAccessibilityEnabled by remember { mutableStateOf(context.isAccessibilityServiceEnabled()) }
     var canDrawOverlays by remember { mutableStateOf(Settings.canDrawOverlays(context)) }
 
-    // State for the app list
-    val installedApps = remember { pmUtils.getInstalledApps() }
+    // --- PROTECTION STATE ---
     var lockedApps by remember { mutableStateOf(prefs.getLockedPackages()) }
+    var isAdminActive by remember { mutableStateOf(dpm.isAdminActive(adminComponent)) }
 
-    // Check if protection is active (if both are locked)
+    // Self-lock is just checking if our own package is in the locked list
+    val isSelfLockEnabled = remember(lockedApps) { lockedApps.contains(myPackage) }
+
     val isUninstallLocked = remember(lockedApps) {
         uninstallerPackages.all { lockedApps.contains(it) }
     }
 
-    fun updatePermissionsState() {
+    // Logic to refresh all system-dependent states
+    fun updateSystemStates() {
         isAccessibilityEnabled = context.isAccessibilityServiceEnabled()
         canDrawOverlays = Settings.canDrawOverlays(context)
+        isAdminActive = dpm.isAdminActive(adminComponent)
+        lockedApps = prefs.getLockedPackages()
     }
 
-    // Enable Defaults on First Launch
+    // Enable Defaults & Initial Check
+    LaunchedEffect(key1 = Unit) {
+        val currentLocked = prefs.getLockedPackages()
+        if (!currentLocked.contains(settingsPackage)) {
+            prefs.setAppLocked(settingsPackage, true)
+            updateSystemStates()
+        }
+    }
+
     LaunchedEffect(key1 = Unit) {
         val currentLocked = prefs.getLockedPackages()
         // If the app is opened for the first time (or criticals are missing), lock them
@@ -82,10 +105,10 @@ fun AppLockerMainScreen(
         }
     }
 
-    // Refresh permissions when user returns to the app
+    // Refresh when user returns from Settings
     LifecycleResumeEffect(key1 = Unit) {
-        updatePermissionsState()
-        onPauseOrDispose { updatePermissionsState() }
+        updateSystemStates()
+        onPauseOrDispose {}
     }
 
     Scaffold(
@@ -124,42 +147,69 @@ fun AppLockerMainScreen(
                 Spacer(modifier = Modifier.height(20.dp))
             }
 
-
             LazyColumn(modifier = Modifier.weight(1f)) {
                 item {
                     SystemProtectionSection(
                         isUninstallLocked = isUninstallLocked,
-                        onLockChanged = { shouldLock ->
+                        isAdminActive = isAdminActive,
+                        isSelfLockEnabled = isSelfLockEnabled,
+                        onUninstallLockChanged = { shouldLock ->
                             uninstallerPackages.forEach { pkg ->
-                                prefs.setAppLocked(pkg, shouldLock)
+                                prefs.setAppLocked(
+                                    pkg,
+                                    shouldLock
+                                )
                             }
+                            lockedApps = prefs.getLockedPackages()
+                        },
+                        onAdminToggle = { shouldActivate ->
+                            if (shouldActivate) {
+                                val intent =
+                                    Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN).apply {
+                                        putExtra(
+                                            DevicePolicyManager.EXTRA_DEVICE_ADMIN,
+                                            adminComponent
+                                        )
+                                        putExtra(
+                                            DevicePolicyManager.EXTRA_ADD_EXPLANATION,
+                                            context.getString(R.string.device_admin_description)
+                                        )
+                                    }
+                                context.startActivity(intent)
+                            } else {
+                                // For security, you might want to trigger a biometric check here
+                                // before allowing deactivation!
+                                dpm.removeActiveAdmin(adminComponent)
+                                isAdminActive = false
+                            }
+                        },
+                        onSelfLockToggle = { shouldLock ->
+                            prefs.setAppLocked(myPackage, shouldLock)
                             lockedApps = prefs.getLockedPackages()
                         }
                     )
+                    Spacer(modifier = Modifier.height(24.dp))
                 }
 
+                // --- APP LIST HEADER ---
                 item {
-                    // --- APP LIST SECTION ---
                     Text(
                         text = stringResource(R.string.select_apps_to_lock),
                         style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.primary
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(bottom = 8.dp)
                     )
                 }
 
+                // --- APP LIST ---
+                val installedApps = pmUtils.getInstalledApps()
                 items(installedApps) { app ->
-                    // Logic: Settings and our own App should be "Locked" by default and hard to disable
-                    val isCritical = app.packageName == settingsPackage || app.packageName == myPackage
-
                     AppItemRow(
                         app = app,
-                        isLocked = if (isCritical) true else lockedApps.contains(app.packageName),
+                        isLocked = lockedApps.contains(app.packageName),
                         onToggle = { isChecked ->
-                            // Prevent unlocking critical apps from the list
-                            if (!isCritical) {
-                                prefs.setAppLocked(app.packageName, isChecked)
-                                lockedApps = prefs.getLockedPackages()
-                            }
+                            prefs.setAppLocked(app.packageName, isChecked)
+                            lockedApps = prefs.getLockedPackages()
                         }
                     )
                 }

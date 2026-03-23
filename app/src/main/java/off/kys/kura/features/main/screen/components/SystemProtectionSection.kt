@@ -1,34 +1,70 @@
 package off.kys.kura.features.main.screen.components
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import off.kys.kura.R
 
 @Composable
 fun SystemProtectionSection(
     isUninstallLocked: Boolean,
-    onLockChanged: (Boolean) -> Unit,
+    isAdminActive: Boolean,
+    isSelfLockEnabled: Boolean,
+    onUninstallLockChanged: (Boolean) -> Unit,
+    onAdminToggle: (Boolean) -> Unit,
+    onSelfLockToggle: (Boolean) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier) {
-        // Section Header
         Text(
             text = stringResource(R.string.system_protection),
             style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.primary
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.padding(bottom = 8.dp)
         )
 
-        // Protection Setting Card
-        ProtectionToggleCard(
-            title = stringResource(R.string.lock_uninstallers),
-            description = stringResource(R.string.lock_uninstallers_desc),
-            checked = isUninstallLocked,
-            onCheckedChange = onLockChanged
-        )
+        Card(
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
+            )
+        ) {
+            Column {
+                // 1. Anti-Uninstall (The Package Installer Lock)
+                ProtectionToggleRow(
+                    title = stringResource(R.string.lock_uninstallers),
+                    description = stringResource(R.string.lock_uninstallers_desc),
+                    checked = isUninstallLocked,
+                    onCheckedChange = onUninstallLockChanged
+                )
 
+                HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
+
+                // 2. Device Admin (The "Greyed-out" Uninstall Button)
+                ProtectionToggleRow(
+                    title = stringResource(R.string.advanced_protection),
+                    description = stringResource(R.string.advanced_protection_desc),
+                    checked = isAdminActive,
+                    onCheckedChange = onAdminToggle
+                )
+
+                HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
+
+                // 3. Self-Lock (Locking this app itself)
+                ProtectionToggleRow(
+                    title = stringResource(R.string.self_lock),
+                    description = stringResource(R.string.self_lock_desc),
+                    checked = isSelfLockEnabled,
+                    onCheckedChange = onSelfLockToggle
+                )
+            }
+        }
     }
 }
