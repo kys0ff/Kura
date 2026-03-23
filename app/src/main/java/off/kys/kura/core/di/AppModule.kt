@@ -2,6 +2,7 @@ package off.kys.kura.core.di
 
 import off.kys.kura.core.common.PackageResolver
 import off.kys.kura.core.registry.LockSessionManager
+import off.kys.kura.features.lock.viewmodel.LockViewModel
 import off.kys.kura.features.main.viewmodel.MainViewModel
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.module.dsl.viewModel
@@ -11,4 +12,5 @@ val appModule = module {
     single { PackageResolver(androidContext()) }
     single { LockSessionManager(androidContext()) }
     viewModel { MainViewModel(get(), get(), get()) }
+    viewModel { LockViewModel(get(), get(), get()) }
 }
