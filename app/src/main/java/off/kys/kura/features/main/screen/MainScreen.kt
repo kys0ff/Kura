@@ -74,6 +74,7 @@ fun MainScreen(
 
     // Logic to refresh all system-dependent states
     fun updateSystemStates() {
+        isSettingsLocked = prefs.isAppLocked(ANDROID_SETTINGS_PACKAGE)
         isAccessibilityEnabled = context.isAccessibilityServiceEnabled()
         canDrawOverlays = Settings.canDrawOverlays(context)
         isAdminActive = dpm.isAdminActive(adminComponent)

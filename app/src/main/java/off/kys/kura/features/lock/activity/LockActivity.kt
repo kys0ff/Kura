@@ -18,7 +18,7 @@ private const val TAG = "LockActivity"
 
 class LockActivity : FragmentActivity() {
     private val pmUtils by inject<PackageManagerUtils>()
-    private val registry by lazy { AppLockRegistry(this) }
+    private val registry by inject<AppLockRegistry>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,9 +45,6 @@ class LockActivity : FragmentActivity() {
 
                 // 3. Close this activity
                 finish()
-
-                // 4. Resume the target app
-                resumeTargetApp(packageName)
             }
 
             override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
@@ -81,36 +78,6 @@ class LockActivity : FragmentActivity() {
             .build()
 
         prompt.authenticate(info)
-    }
-
-    private fun resumeTargetApp(packageName: String) {
-        val launchIntent = packageManager.getLaunchIntentForPackage(packageName)
-
-        if (launchIntent != null) {
-            // 1. STRIP THE RESET FLAG (Crucial for preventing data loss)
-            // getLaunchIntentForPackage includes FLAG_ACTIVITY_RESET_TASK_IF_NEEDED by default.
-            // We invert (.inv()) and use 'and' to remove this specific flag so the app doesn't reset.
-            launchIntent.flags = launchIntent.flags and Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED.inv()
-
-            // 2. Add flags to purely bring the existing task to the front
-            // NEW_TASK brings the task up. SINGLE_TOP prevents the root activity from recreating.
-            launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
-
-            try {
-                startActivity(launchIntent)
-            } catch (e: Exception) {
-                // Fallback if the app was uninstalled or disabled in the last second
-                Log.e(TAG, "resumeTargetApp: ", e)
-            }
-        }
-
-        // 3. Finish the LockActivity
-        finish()
-
-        // 4. Remove the "closing" animation so it looks like the LockActivity
-        // simply vanished, revealing the app instantly.
-        @Suppress("DEPRECATION")
-        overridePendingTransition(0, 0)
     }
 
     private fun goHome() {
