@@ -72,7 +72,11 @@ fun MainScreen(viewModel: MainViewModel = koinInject()) {
                     PermissionCard(
                         state = state,
                         onGrantAccessibility = {
-                            context.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
+                            viewModel.onEvent(MainUiEvent.RefreshSystemStates)
+
+                            if (!state.isAccessibilityEnabled) {
+                                context.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
+                            }
                         },
                         onGrantOverlay = {
                             val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, "package:${context.packageName}".toUri())
