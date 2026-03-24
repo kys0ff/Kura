@@ -10,7 +10,9 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import off.kys.kura.core.common.HapticFeedbackManager
 import off.kys.kura.core.common.PackageResolver
+import off.kys.kura.core.prefs.KuraPreferences
 import off.kys.kura.core.registry.LockSessionManager
 import off.kys.kura.features.lock.services.LockerAccessibilityService
 import off.kys.kura.features.lock.side_effect.LockSideEffect
@@ -18,6 +20,8 @@ import off.kys.kura.features.lock.state.LockViewState
 
 class LockViewModel(
     private val lockManager: LockSessionManager,
+    private val kuraPreferences: KuraPreferences,
+    private val hapticFeedbackManager: HapticFeedbackManager,
     packageResolver: PackageResolver,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
@@ -48,12 +52,22 @@ class LockViewModel(
         // 2. Save to registry
         lockManager.saveUnlockTimestamp(targetPackage)
 
+        // 3. Haptic feedback vibration
+        if (kuraPreferences.vibrationEnabled) {
+            hapticFeedbackManager.success()
+        }
+
         sendEffect(LockSideEffect.Finish)
     }
 
     fun onAuthError(errorCode: Int) {
-        if (errorCode == BiometricPrompt.ERROR_USER_CANCELED ||
-            errorCode == BiometricPrompt.ERROR_NEGATIVE_BUTTON) {
+        if (
+            errorCode == BiometricPrompt.ERROR_USER_CANCELED ||
+            errorCode == BiometricPrompt.ERROR_NEGATIVE_BUTTON
+        ) {
+            if (kuraPreferences.vibrationEnabled) {
+                hapticFeedbackManager.error()
+            }
             sendEffect(LockSideEffect.GoHome)
         }
     }
