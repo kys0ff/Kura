@@ -72,7 +72,7 @@ class SettingsScreen : Screen {
                         prefs.lockTimeout = it
                     }
                 }
-                item {
+                /*item {
                     ProtectionToggleRow(
                         title = stringResource(R.string.lock_on_recent_tasks_close_title),
                         description = stringResource(R.string.lock_on_recent_tasks_close_desc),
@@ -82,7 +82,7 @@ class SettingsScreen : Screen {
                             prefs.lockOnExit = it
                         }
                     )
-                }
+                }*/
 
                 // --- SECTION: FEEDBACK ---
                 item { SettingHeader(stringResource(R.string.feedback)) }
