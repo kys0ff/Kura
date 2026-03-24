@@ -6,8 +6,8 @@ import off.kys.kura.core.common.constants.KURA_PACKAGE
 import off.kys.kura.core.data.model.AppInfo
 
 data class MainViewState(
-    val isAccessibilityEnabled: Boolean = false,
-    val canDrawOverlays: Boolean = false,
+    val isAccessibilityEnabled: Boolean = true,
+    val canDrawOverlays: Boolean = true,
     val isAdminActive: Boolean = false,
     val lockedApps: Set<String> = emptySet(),
     val installedApps: List<AppInfo> = emptyList() // Replace AppInfo with your actual model
