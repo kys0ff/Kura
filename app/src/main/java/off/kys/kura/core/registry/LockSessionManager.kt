@@ -2,14 +2,13 @@ package off.kys.kura.core.registry
 
 import android.content.Context
 import androidx.core.content.edit
+import off.kys.kura.core.prefs.KuraPreferences
 
-class LockSessionManager(context: Context) {
+class LockSessionManager(
+    context: Context,
+    private val appPrefs: KuraPreferences
+) {
     private val prefs = context.getSharedPreferences("locker_settings", Context.MODE_PRIVATE)
-
-    companion object {
-        // Use one constant so they don't get out of sync
-        private const val SESSION_TIMEOUT_MS = 5 * 60 * 1000L
-    }
 
     fun getLockedPackages(): Set<String> =
         prefs.getStringSet("locked_packages", emptySet()) ?: emptySet()
@@ -32,7 +31,7 @@ class LockSessionManager(context: Context) {
 
     fun isSessionValid(packageName: String): Boolean {
         val lastActive = prefs.getLong("unlock_$packageName", 0L)
-        return (System.currentTimeMillis() - lastActive) < SESSION_TIMEOUT_MS
+        return (System.currentTimeMillis() - lastActive) < appPrefs.lockTimeout
     }
 
     fun clearAllSessions() {
