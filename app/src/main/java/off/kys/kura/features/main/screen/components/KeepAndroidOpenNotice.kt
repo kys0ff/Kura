@@ -1,5 +1,12 @@
 package off.kys.kura.features.main.screen.components
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -23,54 +30,67 @@ import off.kys.kura.R
 
 @Composable
 fun KeepAndroidOpenNotice(
+    isVisible: Boolean, // Added to control the animation state
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val uriHandler = LocalUriHandler.current
 
-    Card(
-        modifier = modifier,
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.secondaryContainer
+    AnimatedVisibility(
+        visible = isVisible,
+        enter = slideInVertically(
+            initialOffsetY = { -40 } // Slide in slightly from the top
+        ) + fadeIn(initialAlpha = 0.3f),
+        exit = fadeOut() + shrinkVertically(
+            animationSpec = spring(stiffness = Spring.StiffnessMediumLow)
         )
     ) {
-        Column(modifier = Modifier.padding(12.dp)) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Icon(
-                    painter = painterResource(R.drawable.round_info_24),
-                    contentDescription = null
+        Card(
+            modifier = modifier.padding(vertical = 8.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.secondaryContainer
+            ),
+            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        ) {
+            Column(modifier = Modifier.padding(12.dp)) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.round_info_24),
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                    Text(
+                        text = stringResource(R.string.help_keep_android_open),
+                        style = MaterialTheme.typography.titleSmall,
+                        modifier = Modifier.weight(1f)
+                    )
+                    IconButton(onClick = onDismiss) {
+                        Icon(
+                            painter = painterResource(R.drawable.round_close_24),
+                            contentDescription = stringResource(R.string.dismiss)
+                        )
+                    }
+                }
+                Text(
+                    text = stringResource(R.string.keep_android_open_notice),
+                    style = MaterialTheme.typography.bodyMedium
                 )
                 Text(
-                    text = stringResource(R.string.help_keep_android_open),
-                    style = MaterialTheme.typography.titleSmall,
-                    modifier = Modifier.weight(1f)
+                    text = stringResource(R.string.learn_more_at_keepandroidopen_org),
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        color = MaterialTheme.colorScheme.primary,
+                        textDecoration = TextDecoration.Underline
+                    ),
+                    modifier = Modifier
+                        .padding(top = 8.dp)
+                        .clickable {
+                            uriHandler.openUri("https://keepandroidopen.org/")
+                        }
                 )
-                IconButton(onClick = onDismiss) {
-                    Icon(
-                        painter = painterResource(R.drawable.round_close_24),
-                        contentDescription = stringResource(R.string.dismiss)
-                    )
-                }
             }
-            Text(
-                text = stringResource(R.string.keep_android_open_notice),
-                style = MaterialTheme.typography.bodyMedium
-            )
-            Text(
-                text = stringResource(R.string.learn_more_at_keepandroidopen_org),
-                style = MaterialTheme.typography.bodyMedium.copy(
-                    color = MaterialTheme.colorScheme.primary,
-                    textDecoration = TextDecoration.Underline
-                ),
-                modifier = Modifier
-                    .padding(top = 8.dp)
-                    .clickable {
-                        uriHandler.openUri("https://keepandroidopen.org/")
-                    }
-            )
         }
     }
 }

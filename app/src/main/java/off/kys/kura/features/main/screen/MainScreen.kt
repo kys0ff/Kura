@@ -95,10 +95,11 @@ class MainScreen : Screen {
                 contentPadding = PaddingValues(bottom = 24.dp)
             ) {
                 // --- Keep Android Open Notice ---
-                if (showKeepAndroidOpenNotice) {
-                    item {
-                        KeepAndroidOpenNotice(onDismiss = { showKeepAndroidOpenNotice = false })
-                    }
+                item {
+                    KeepAndroidOpenNotice(
+                        isVisible = showKeepAndroidOpenNotice,
+                        onDismiss = { showKeepAndroidOpenNotice = false }
+                    )
                 }
 
                 if (!state.isAccessibilityEnabled || !state.canDrawOverlays) {
