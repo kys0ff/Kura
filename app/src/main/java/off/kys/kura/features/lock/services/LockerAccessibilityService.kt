@@ -30,7 +30,6 @@ class LockerAccessibilityService : AccessibilityService() {
             registry.clearAllSessions()
         }
     }
-    private var lastPackageName: String? = null
     private var lastDiskWriteTime = 0L
 
     // Track the package we just unlocked to avoid splash screen loops
@@ -110,7 +109,7 @@ class LockerAccessibilityService : AccessibilityService() {
             }
         }
 
-        lastPackageName = packageName
+        refreshSession(packageName)
     }
 
     private fun refreshSession(packageName: String) {
