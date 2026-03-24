@@ -45,4 +45,8 @@
     <string name="privacy_policy_desc">How we handle your data</string>
     <string name="app_version">Version</string>
     <string name="lock_timeout">Lock Timeout: %1$s</string>
+    <string name="dismiss">Dismiss</string>
+    <string name="help_keep_android_open">Help Keep Android Open</string>
+    <string name="keep_android_open_notice">Support the movement to keep Android an open platform for everyone.</string>
+    <string name="learn_more_at_keepandroidopen_org">Learn more at keepandroidopen.org</string>
 </resources>

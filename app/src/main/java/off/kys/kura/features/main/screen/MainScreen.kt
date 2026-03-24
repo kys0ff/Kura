@@ -21,7 +21,11 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
@@ -38,6 +42,7 @@ import off.kys.kura.core.admin.LockerAdminReceiver
 import off.kys.kura.features.main.event.MainUiEvent
 import off.kys.kura.features.main.screen.components.AppItemRow
 import off.kys.kura.features.main.screen.components.AppSelectionHeader
+import off.kys.kura.features.main.screen.components.KeepAndroidOpenNotice
 import off.kys.kura.features.main.screen.components.PermissionCard
 import off.kys.kura.features.main.screen.components.SystemProtectionSection
 import off.kys.kura.features.main.viewmodel.MainViewModel
@@ -55,6 +60,9 @@ class MainScreen : Screen {
         val state = viewModel.uiState
         val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
         val adminComponent = remember { ComponentName(context, LockerAdminReceiver::class.java) }
+
+        // State to manage one-time visibility of the banner
+        var showKeepAndroidOpenNotice by rememberSaveable { mutableStateOf(true) }
 
         LifecycleResumeEffect(Unit) {
             viewModel.onEvent(MainUiEvent.RefreshSystemStates)
@@ -86,13 +94,19 @@ class MainScreen : Screen {
                 verticalArrangement = Arrangement.spacedBy(16.dp),
                 contentPadding = PaddingValues(bottom = 24.dp)
             ) {
+                // --- Keep Android Open Notice ---
+                if (showKeepAndroidOpenNotice) {
+                    item {
+                        KeepAndroidOpenNotice(onDismiss = { showKeepAndroidOpenNotice = false })
+                    }
+                }
+
                 if (!state.isAccessibilityEnabled || !state.canDrawOverlays) {
                     item {
                         PermissionCard(
                             state = state,
                             onGrantAccessibility = {
                                 viewModel.onEvent(MainUiEvent.RefreshSystemStates)
-
                                 if (!state.isAccessibilityEnabled) {
                                     context.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
                                 }
@@ -113,11 +127,7 @@ class MainScreen : Screen {
                         state = state,
                         onSettingsLockToggle = { viewModel.onEvent(MainUiEvent.ToggleSettingsLock(it)) },
                         onUninstallLockChanged = {
-                            viewModel.onEvent(
-                                MainUiEvent.ToggleUninstallLock(
-                                    it
-                                )
-                            )
+                            viewModel.onEvent(MainUiEvent.ToggleUninstallLock(it))
                         },
                         onSelfLockToggle = { viewModel.onEvent(MainUiEvent.ToggleSelfLock(it)) },
                         onAdminToggle = { activate ->
@@ -153,17 +163,11 @@ class MainScreen : Screen {
                         app = app,
                         isLocked = state.lockedApps.contains(app.packageName),
                         onToggle = {
-                            viewModel.onEvent(
-                                MainUiEvent.ToggleAppLock(
-                                    app.packageName,
-                                    it
-                                )
-                            )
+                            viewModel.onEvent(MainUiEvent.ToggleAppLock(app.packageName, it))
                         }
                     )
                 }
             }
         }
     }
-
 }
