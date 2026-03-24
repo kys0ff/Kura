@@ -26,4 +26,23 @@
     <string name="lock_settings_desc">Prevents access to Android Settings to stop users from disabling the locker or clearing data.</string>
     <string name="unlock_all">Unlock All</string>
     <string name="lock_all">Lock All</string>
+    <string name="settings">Settings</string>
+    <string name="security_behavior">Security Behavior</string>
+    <string name="lock_on_recent_tasks_close_title">Lock on Recent Tasks Close</string>
+    <string name="lock_on_recent_tasks_close_desc">Re-locks apps immediately if they are swiped away from the multitasking menu.</string>
+    <string name="feedback">Feedback</string>
+    <string name="haptic_feedback_title">Haptic Feedback</string>
+    <string name="heptic_feedback_desc">Vibrate when unlocking or entering wrong password.</string>
+    <string name="immediately">Immediately</string>
+    <string name="_1_minute">1 Minute</string>
+    <string name="_5_minutes">5 Minutes</string>
+    <string name="_15_minutes">15 Minutes</string>
+    <string name="custom">Custom</string>
+    <string name="about_kura">About Kura</string>
+    <string name="github_repo">GitHub Repository</string>
+    <string name="github_repo_desc">View source code and contribute</string>
+    <string name="privacy_policy">Privacy Policy</string>
+    <string name="privacy_policy_desc">How we handle your data</string>
+    <string name="app_version">Version</string>
+    <string name="lock_timeout">Lock Timeout: %1$s</string>
 </resources>

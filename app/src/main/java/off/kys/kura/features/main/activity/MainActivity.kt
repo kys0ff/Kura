@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import cafe.adriel.voyager.navigator.Navigator
 import off.kys.kura.core.designsystem.theme.KuraTheme
 import off.kys.kura.features.main.screen.MainScreen
 
@@ -14,7 +15,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             KuraTheme {
-                MainScreen()
+                Navigator(screen = MainScreen())
             }
         }
     }

@@ -74,7 +74,7 @@ fun SystemProtectionSection(
 }
 
 @Composable
-private fun ProtectionToggleRow(
+fun ProtectionToggleRow(
     title: String,
     description: String,
     checked: Boolean,
