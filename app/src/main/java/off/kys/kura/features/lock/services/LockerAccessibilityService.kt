@@ -31,6 +31,7 @@ class LockerAccessibilityService : AccessibilityService() {
         }
     }
     private var lastPackageName: String? = null
+    private var lastDiskWriteTime = 0L
 
     // Track the package we just unlocked to avoid splash screen loops
     companion object {
@@ -62,48 +63,67 @@ class LockerAccessibilityService : AccessibilityService() {
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent) {
-        if (event.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
-            val packageName = event.packageName?.toString() ?: return
+        when (event.eventType) {
+            // High-level change (Opening an app or switching screens)
+            AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED -> handleWindowChange(event)
 
-            // 1. EXIT IMMEDIATELY IF IT'S LockActivity
-            if (packageName == KURA_PACKAGE) {
-                val className = event.className?.toString() ?: return
-
-                if (className.contains("LockActivity"))
-                    return
-            }
-
-            // 2. REFRESH HEARTBEAT
-            // If they are currently in the app we just unlocked, keep the timer fresh.
-            if (packageName == lastUnlockedPackage) {
-                lastUnlockTime = System.currentTimeMillis()
-                registry.saveUnlockTimestamp(packageName)
-                return
-            }
-
-            // 3. CHECK PROTECTION
-            if (registry.isAppLocked(packageName)) {
-                if (!registry.isSessionValid(packageName)) {
-                    // Session expired or never existed
-                    launchLockScreen(packageName)
-                } else {
-                    // Session is still valid, but we just switched back into the app.
-                    // Update the 'lastUnlockedPackage' so the heartbeat works for this app now.
-                    lastUnlockedPackage = packageName
-                    lastUnlockTime = System.currentTimeMillis()
-                    registry.saveUnlockTimestamp(packageName) // Optional but safer
+            // Granular interaction (Clicking or Scrolling)
+            AccessibilityEvent.TYPE_VIEW_CLICKED, AccessibilityEvent.TYPE_VIEW_SCROLLED -> {
+                // Only refresh if the user is interacting with the ALREADY unlocked app
+                if (packageName == lastUnlockedPackage) {
+                    refreshSession(packageName)
                 }
-            } else {
-                // If they switched to an UNLOCKED app (like the Launcher),
-                // we don't clear lastUnlockedPackage yet. This allows "Quick Switching"
-                // between two apps without re-locking.
             }
 
-            lastPackageName = packageName
+            else -> Log.d(TAG, "onAccessibilityEvent: Unhandled event: $event")
         }
     }
 
     override fun onInterrupt() {}
+
+    private fun handleWindowChange(event: AccessibilityEvent) {
+        val packageName = event.packageName?.toString() ?: return
+
+        // 1. EXIT IMMEDIATELY IF IT'S LockActivity
+        if (packageName == KURA_PACKAGE) {
+            val className = event.className?.toString() ?: return
+
+            if (className.contains("LockActivity"))
+                return
+        }
+
+        // 2. REFRESH HEARTBEAT
+        // If they are currently in the app we just unlocked, keep the timer fresh.
+        if (packageName == lastUnlockedPackage) {
+            refreshSession(packageName)
+            return
+        }
+
+        // 3. CHECK PROTECTION
+        if (registry.isAppLocked(packageName)) {
+            if (!registry.isSessionValid(packageName)) {
+                // Session expired or never existed
+                launchLockScreen(packageName)
+            } else {
+                // Session is still valid, but we just switched back into the app.
+                refreshSession(packageName)
+            }
+        }
+
+        lastPackageName = packageName
+    }
+
+    private fun refreshSession(packageName: String) {
+        val currentTime = System.currentTimeMillis()
+        lastUnlockTime = currentTime // Update the fast local variable
+
+        // Only write to SharedPreferences if it's been more than 30 seconds
+        // since the last write to save battery and CPU.
+        if (currentTime - lastDiskWriteTime > 30_000L) {
+            registry.saveUnlockTimestamp(packageName)
+            lastDiskWriteTime = currentTime
+        }
+    }
 
     private fun launchLockScreen(packageName: String) {
         val intent = Intent(this, LockActivity::class.java).apply {
