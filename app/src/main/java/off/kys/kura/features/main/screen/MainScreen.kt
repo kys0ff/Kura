@@ -55,7 +55,7 @@ fun MainScreen(
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
 
     // Sync state when returning to app
-    LifecycleResumeEffect(Unit) {
+    LifecycleResumeEffect(key1 = Unit) {
         viewModel.onEvent(MainUiEvent.RefreshSystemStates)
         onPauseOrDispose {}
     }

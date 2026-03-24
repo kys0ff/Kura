@@ -11,6 +11,7 @@ import android.content.IntentFilter
 import android.os.Build
 import android.util.Log
 import android.view.accessibility.AccessibilityEvent
+import off.kys.kura.core.common.constants.KURA_PACKAGE
 import off.kys.kura.core.registry.LockSessionManager
 import off.kys.kura.features.lock.activity.LockActivity
 import org.koin.android.ext.android.inject
@@ -64,32 +65,38 @@ class LockerAccessibilityService : AccessibilityService() {
         if (event.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
             val packageName = event.packageName?.toString() ?: return
 
-            if (packageName == "off.kys.kura.debug")
-                Log.d(TAG, "onAccessibilityEvent: Self app detected")
+            // 1. EXIT IMMEDIATELY IF IT'S LockActivity
+            if (packageName == KURA_PACKAGE) {
+                val className = event.className?.toString() ?: return
 
-            // 1. If this app is ALREADY unlocked and the user is still using it,
-            // refresh the timestamp so the 5-minute timer "restarts" now.
+                if (className.contains("LockActivity"))
+                    return
+            }
+
+            // 2. REFRESH HEARTBEAT
+            // If they are currently in the app we just unlocked, keep the timer fresh.
             if (packageName == lastUnlockedPackage) {
                 lastUnlockTime = System.currentTimeMillis()
-                registry.saveUnlockTimestamp(packageName) // Keeps the session alive
+                registry.saveUnlockTimestamp(packageName)
                 return
             }
 
-            // 2. Standard Lock Logic
-            Log.d(TAG, "onAccessibilityEvent: $packageName lock status: ${registry.isAppLocked(packageName)}")
-            Log.d(TAG, "onAccessibilityEvent: $packageName has valid session: ${registry.isSessionValid(packageName)}")
-            Log.d(TAG, "onAccessibilityEvent: $packageName lastUnlockedPackage: $lastUnlockedPackage")
-            Log.d(TAG, "onAccessibilityEvent: $packageName lastUnlockTime: $lastUnlockTime")
-
+            // 3. CHECK PROTECTION
             if (registry.isAppLocked(packageName)) {
-                // Check if the PREVIOUS session actually expired
                 if (!registry.isSessionValid(packageName)) {
+                    // Session expired or never existed
                     launchLockScreen(packageName)
                 } else {
-                    // Session is still valid, update it because they just switched back to it
+                    // Session is still valid, but we just switched back into the app.
+                    // Update the 'lastUnlockedPackage' so the heartbeat works for this app now.
                     lastUnlockedPackage = packageName
                     lastUnlockTime = System.currentTimeMillis()
+                    registry.saveUnlockTimestamp(packageName) // Optional but safer
                 }
+            } else {
+                // If they switched to an UNLOCKED app (like the Launcher),
+                // we don't clear lastUnlockedPackage yet. This allows "Quick Switching"
+                // between two apps without re-locking.
             }
 
             lastPackageName = packageName
