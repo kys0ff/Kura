@@ -11,25 +11,53 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
-    secondary = PurpleGrey80,
-    tertiary = Pink80
+    primary = darkPrimary,
+    onPrimary = darkOnPrimary,
+    primaryContainer = darkPrimaryContainer,
+    onPrimaryContainer = darkOnPrimaryContainer,
+    secondary = darkSecondary,
+    onSecondary = darkOnSecondary,
+    secondaryContainer = darkSecondaryContainer,
+    onSecondaryContainer = darkOnSecondaryContainer,
+    tertiary = darkTertiary,
+    onTertiary = darkOnTertiary,
+    tertiaryContainer = darkTertiaryContainer,
+    onTertiaryContainer = darkOnTertiaryContainer,
+    background = darkBackground,
+    onBackground = darkOnBackground,
+    surface = darkSurface,
+    onSurface = darkOnSurface,
+    surfaceVariant = darkSurfaceVariant,
+    onSurfaceVariant = darkOnSurfaceVariant,
+    outline = darkOutline,
+    inverseOnSurface = darkInverseOnSurface,
+    inverseSurface = darkInverseSurface,
+    inversePrimary = darkPrimaryInverse
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
-    secondary = PurpleGrey40,
-    tertiary = Pink40
-
-    /* Other default colors to override
-    background = Color(0xFFFFFBFE),
-    surface = Color(0xFFFFFBFE),
-    onPrimary = Color.White,
-    onSecondary = Color.White,
-    onTertiary = Color.White,
-    onBackground = Color(0xFF1C1B1F),
-    onSurface = Color(0xFF1C1B1F),
-    */
+    primary = lightPrimary,
+    onPrimary = lightOnPrimary,
+    primaryContainer = lightPrimaryContainer,
+    onPrimaryContainer = lightOnPrimaryContainer,
+    secondary = lightSecondary,
+    onSecondary = lightOnSecondary,
+    secondaryContainer = lightSecondaryContainer,
+    onSecondaryContainer = lightOnSecondaryContainer,
+    tertiary = lightTertiary,
+    onTertiary = lightOnTertiary,
+    tertiaryContainer = lightTertiaryContainer,
+    onTertiaryContainer = lightOnTertiaryContainer,
+    background = lightBackground,
+    onBackground = lightOnBackground,
+    surface = lightSurface,
+    onSurface = lightOnSurface,
+    surfaceVariant = lightSurfaceVariant,
+    onSurfaceVariant = lightOnSurfaceVariant,
+    outline = lightOutline,
+    inverseOnSurface = lightInverseOnSurface,
+    inverseSurface = lightInverseSurface,
+    inversePrimary = lightPrimaryInverse
 )
 
 @Composable
