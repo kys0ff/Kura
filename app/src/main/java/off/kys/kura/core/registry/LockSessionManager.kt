@@ -13,13 +13,9 @@ class LockSessionManager(
     fun getLockedPackages(): Set<String> =
         prefs.getStringSet("locked_packages", emptySet()) ?: emptySet()
 
-    // Simplified: Check if package is in the "to-lock" list AND if session is dead
-    fun isAppLocked(packageName: String): Boolean {
-        if (!getLockedPackages().contains(packageName)) return false
-        return !isSessionValid(packageName)
-    }
+    fun isPackageLocked(packageName: String): Boolean = getLockedPackages().contains(packageName)
 
-    fun setAppLocked(packageName: String, locked: Boolean) {
+    fun updatePackageLock(packageName: String, locked: Boolean) {
         val set = getLockedPackages().toMutableSet()
         if (locked) set.add(packageName) else set.remove(packageName)
         prefs.edit { putStringSet("locked_packages", set) }

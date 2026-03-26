@@ -44,18 +44,18 @@ class MainViewModel(
         when (event) {
             is MainUiEvent.RefreshSystemStates -> updateSystemStates(context)
             is MainUiEvent.ToggleAppLock -> {
-                lockManager.setAppLocked(event.packageName, event.shouldLock)
+                lockManager.updatePackageLock(event.packageName, event.shouldLock)
                 uiState = uiState.copy(lockedApps = lockManager.getLockedPackages())
             }
 
             is MainUiEvent.ToggleSettingsLock -> {
-                lockManager.setAppLocked(ANDROID_SETTINGS_PACKAGE, event.shouldLock)
+                lockManager.updatePackageLock(ANDROID_SETTINGS_PACKAGE, event.shouldLock)
                 uiState = uiState.copy(lockedApps = lockManager.getLockedPackages())
             }
 
             is MainUiEvent.ToggleUninstallLock -> {
                 ANDROID_UNINSTALLER_PACKAGES.forEach {
-                    lockManager.setAppLocked(
+                    lockManager.updatePackageLock(
                         it,
                         event.shouldLock
                     )
@@ -64,7 +64,7 @@ class MainViewModel(
             }
 
             is MainUiEvent.ToggleSelfLock -> {
-                lockManager.setAppLocked(KURA_PACKAGE, event.shouldLock)
+                lockManager.updatePackageLock(KURA_PACKAGE, event.shouldLock)
                 uiState = uiState.copy(lockedApps = lockManager.getLockedPackages())
             }
 
@@ -78,13 +78,13 @@ class MainViewModel(
 
             is MainUiEvent.LockAllApps -> {
                 val allPackageNames = uiState.installedApps.map { it.packageName }
-                allPackageNames.forEach { lockManager.setAppLocked(it, true) }
+                allPackageNames.forEach { lockManager.updatePackageLock(it, true) }
                 uiState = uiState.copy(lockedApps = lockManager.getLockedPackages())
             }
 
             is MainUiEvent.UnlockAllApps -> {
                 val allPackagesNames = uiState.installedApps.map { it.packageName }
-                allPackagesNames.forEach { lockManager.setAppLocked(it, false) }
+                allPackagesNames.forEach { lockManager.updatePackageLock(it, false) }
                 uiState = uiState.copy(lockedApps = lockManager.getLockedPackages())
             }
         }
