@@ -12,6 +12,7 @@ import android.os.Build
 import android.util.Log
 import android.view.accessibility.AccessibilityEvent
 import off.kys.kura.core.common.constants.KURA_PACKAGE
+import off.kys.kura.core.prefs.KuraPreferences
 import off.kys.kura.core.registry.LockSessionManager
 import off.kys.kura.features.lock.activity.LockActivity
 import org.koin.android.ext.android.inject
@@ -20,6 +21,7 @@ private const val TAG = "LockerAccessibilityService"
 
 class LockerAccessibilityService : AccessibilityService() {
     private val registry: LockSessionManager by inject()
+    private val appPrefs: KuraPreferences by inject()
     private val screenOffReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             Log.d(TAG, "onReceive: Resetting all sessions")
@@ -30,11 +32,10 @@ class LockerAccessibilityService : AccessibilityService() {
             registry.clearAllSessions()
         }
     }
-    private var lastPackageName: String? = null // Restore this!
-    private var lastDiskWriteTime = 0L
+    private var lastPackageName: String? = null
 
     companion object {
-        private const val DISK_WRITE_THROTTLE = 10_000L
+        private const val DISK_WRITE_THROTTLE = 5_000L
         var lastUnlockedPackage: String? = null
         var lastUnlockTime: Long = 0
     }
@@ -63,74 +64,82 @@ class LockerAccessibilityService : AccessibilityService() {
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent) {
-        // Safe-extract package name. Some system events have null packages.
         val currentPackage = event.packageName?.toString() ?: return
 
         when (event.eventType) {
             AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED -> {
-                // 1. Safe "Exit" Save Logic
-                // We use safe calls (?.) and avoid !! (double-bang)
-                val last = lastPackageName
-                val unlocked = lastUnlockedPackage
-
-                if (last != null && unlocked != null && last == unlocked && currentPackage != unlocked) {
-                    // User is leaving the protected app, save the timestamp now
-                    registry.saveUnlockTimestamp(last)
-                }
-
-                handleWindowChange(event, currentPackage)
-                lastPackageName = currentPackage
+                // Logic for switching apps (The Gatekeeper)
+                handleWindowChange(event)
             }
 
             AccessibilityEvent.TYPE_VIEW_CLICKED,
             AccessibilityEvent.TYPE_VIEW_SCROLLED -> {
-                // 2. Heartbeat logic
+                // Logic for staying in the app (The Heartbeat)
+                // We only care if this is the app we ALREADY verified
                 if (currentPackage == lastUnlockedPackage) {
-                    refreshSession(currentPackage)
+                    val currentTime = System.currentTimeMillis()
+                    // Only "process" the interaction if 5 seconds have passed since the last one
+                    // This saves CPU and prevents the "Double-Save" lag
+                    if (currentTime - lastUnlockTime > DISK_WRITE_THROTTLE) {
+                        refreshSession(currentPackage)
+                    }
                 }
             }
 
-            else -> Log.d(TAG, "onAccessibilityEvent: Unhandled event type: ${event.eventType}")
+            else -> Log.d(TAG, "onAccessibilityEvent: Unhandled event: $event")
         }
     }
 
-    private fun handleWindowChange(event: AccessibilityEvent, packageName: String) {
-        // 1. Exit early if it's our own app's lock screen
-        if (packageName == KURA_PACKAGE) {
-            val className = event.className?.toString() ?: return
-            if (className.contains("LockActivity")) return
+    private fun handleWindowChange(event: AccessibilityEvent) {
+        val currentPackage = event.packageName?.toString() ?: return
+        val currentTime = System.currentTimeMillis()
+
+        // 1. Exit early for our own Lock Screen
+        if (currentPackage == KURA_PACKAGE) {
+            if (event.className?.toString()?.contains("LockActivity") == true) return
         }
 
-        // 2. If it's the app we just unlocked, keep the timer alive
-        if (packageName == lastUnlockedPackage) {
-            refreshSession(packageName)
-            return
+        // 2. The "Exit Save" Logic
+        // If we just moved AWAY from a locked app that was valid, save its exit time.
+        val last = lastPackageName
+        if (last != null && last != currentPackage &&
+            registry.isPackageLocked(last) && registry.isSessionValid(last)) {
+            refreshSession(last)
         }
 
-        // 3. Check if the app is locked and if the session is still valid
-        if (registry.isPackageLocked(packageName)) {
-            if (!registry.isSessionValid(packageName)) {
-                launchLockScreen(packageName)
+        // 3. The Unified "Am I allowed to be here?" Check
+        if (registry.isPackageLocked(currentPackage)) {
+
+            // Fast Check: Is this the package we just unlocked, AND is the timer still valid?
+            val isMemoryValid = (currentPackage == lastUnlockedPackage) &&
+                    (currentTime - lastUnlockTime < appPrefs.lockTimeout)
+
+            if (isMemoryValid) {
+                // User is active and within time. Refresh the heartbeat.
+                refreshSession(currentPackage)
             } else {
-                // Valid session exists, just update the service's memory
-                lastUnlockedPackage = packageName
-                refreshSession(packageName)
+                // Memory check failed (or it's a different app).
+                // Fallback to Disk: Check if a valid session exists in SharedPreferences.
+                if (registry.isSessionValid(currentPackage)) {
+                    // Disk says it's okay! Sync memory so next event is a "Fast Check".
+                    lastUnlockedPackage = currentPackage
+                    lastUnlockTime = currentTime
+                    refreshSession(currentPackage)
+                } else {
+                    // Both Memory and Disk failed. Trigger Lock.
+                    launchLockScreen(currentPackage)
+                }
             }
         }
+
+        // Always update lastPackageName at the end
+        lastPackageName = currentPackage
     }
 
     override fun onInterrupt() {}
 
     private fun refreshSession(packageName: String) {
-        val currentTime = System.currentTimeMillis()
-        lastUnlockTime = currentTime // Update the fast local variable
-
-        // Only write to SharedPreferences if it's been more than 30 seconds
-        // since the last write to save battery and CPU.
-        if (currentTime - lastDiskWriteTime > DISK_WRITE_THROTTLE) {
-            registry.saveUnlockTimestamp(packageName)
-            lastDiskWriteTime = currentTime
-        }
+        registry.saveUnlockTimestamp(packageName)
     }
 
     private fun launchLockScreen(packageName: String) {
