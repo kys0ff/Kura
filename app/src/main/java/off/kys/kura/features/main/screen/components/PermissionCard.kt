@@ -36,21 +36,29 @@ fun PermissionCard(
                 Text(stringResource(R.string.action_required), style = MaterialTheme.typography.titleSmall)
             }
             if (!state.isAccessibilityEnabled) {
-                PermissionItem(stringResource(R.string._1_enable_accessibility_service_to_detect_app_launches), onGrantAccessibility)
+                PermissionItem(
+                    text = stringResource(R.string._1_enable_accessibility_service_to_detect_app_launches),
+                    buttonText = stringResource(R.string.enable_accessibility),
+                    onClick = onGrantAccessibility
+                )
             }
             if (!state.canDrawOverlays) {
-                PermissionItem(stringResource(R.string._2_allow_display_over_other_apps_to_show_the_lock_screen), onGrantOverlay)
+                PermissionItem(
+                    text = stringResource(R.string._2_allow_display_over_other_apps_to_show_the_lock_screen),
+                    buttonText = stringResource(R.string.allow_overlay),
+                    onClick = onGrantOverlay
+                )
             }
         }
     }
 }
 
 @Composable
-private fun PermissionItem(text: String, onClick: () -> Unit) {
+private fun PermissionItem(text: String, buttonText:String, onClick: () -> Unit) {
     Column {
         Text(text, style = MaterialTheme.typography.bodySmall)
         Button(onClick = onClick, modifier = Modifier.padding(top = 4.dp)) {
-            Text(stringResource(R.string.enable_accessibility)) // Update labels as needed via resources
+            Text(buttonText)
         }
     }
 }
