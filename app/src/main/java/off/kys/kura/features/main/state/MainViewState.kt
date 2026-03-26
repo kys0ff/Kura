@@ -10,7 +10,8 @@ data class MainViewState(
     val canDrawOverlays: Boolean = true,
     val isAdminActive: Boolean = false,
     val lockedApps: Set<String> = emptySet(),
-    val installedApps: List<AppInfo> = emptyList() // Replace AppInfo with your actual model
+    val installedApps: List<AppInfo> = emptyList(), // Replace AppInfo with your actual model
+    val isDeviceSecure: Boolean = true
 ) {
     val isSettingsLocked: Boolean = lockedApps.contains(ANDROID_SETTINGS_PACKAGE)
     val isSelfLockEnabled: Boolean = lockedApps.contains(KURA_PACKAGE)

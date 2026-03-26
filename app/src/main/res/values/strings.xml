@@ -49,4 +49,7 @@
     <string name="help_keep_android_open">Help Keep Android Open</string>
     <string name="keep_android_open_notice">Support the movement to keep Android an open platform for everyone.</string>
     <string name="learn_more_at_keepandroidopen_org">Learn more at keepandroidopen.org</string>
+    <string name="no_device_security_title">Device Not Secured</string>
+    <string name="no_device_security_desc">Kura requires a system PIN, Pattern, or Password to lock your apps. Without one, anyone can open the locker and your protected apps.</string>
+    <string name="configure_lock">Set Password</string>
 </resources>

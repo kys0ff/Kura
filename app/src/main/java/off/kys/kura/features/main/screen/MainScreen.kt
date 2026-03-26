@@ -43,6 +43,7 @@ import off.kys.kura.features.main.event.MainUiEvent
 import off.kys.kura.features.main.screen.components.AppItemRow
 import off.kys.kura.features.main.screen.components.AppSelectionHeader
 import off.kys.kura.features.main.screen.components.KeepAndroidOpenNotice
+import off.kys.kura.features.main.screen.components.NoDeviceSecurityNotice
 import off.kys.kura.features.main.screen.components.PermissionCard
 import off.kys.kura.features.main.screen.components.SystemProtectionSection
 import off.kys.kura.features.main.viewmodel.MainViewModel
@@ -94,6 +95,19 @@ class MainScreen : Screen {
                 verticalArrangement = Arrangement.spacedBy(16.dp),
                 contentPadding = PaddingValues(bottom = 24.dp)
             ) {
+                // DEVICE SECURITY CHECK
+                if (!state.isDeviceSecure) {
+                    item {
+                        NoDeviceSecurityNotice(
+                            onConfigure = {
+                                val intent = Intent(Settings.ACTION_SECURITY_SETTINGS)
+                                context.startActivity(intent)
+                            }
+                        )
+                    }
+                }
+
+
                 // --- Keep Android Open Notice ---
                 item {
                     KeepAndroidOpenNotice(

@@ -1,6 +1,7 @@
 package off.kys.kura.features.main.viewmodel
 
 import android.app.Application
+import android.app.KeyguardManager
 import android.app.admin.DevicePolicyManager
 import android.content.ComponentName
 import android.content.Context
@@ -93,12 +94,15 @@ class MainViewModel(
     private fun updateSystemStates(context: Context) {
         val dpm = context.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
         val adminComponent = ComponentName(context, LockerAdminReceiver::class.java)
+        val keyguardManager = context.getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager
+        val isSecure = keyguardManager.isDeviceSecure
 
         uiState = uiState.copy(
             isAccessibilityEnabled = context.isAccessibilityServiceEnabled(),
             canDrawOverlays = Settings.canDrawOverlays(context),
             isAdminActive = dpm.isAdminActive(adminComponent),
-            lockedApps = lockManager.getLockedPackages()
+            lockedApps = lockManager.getLockedPackages(),
+            isDeviceSecure = isSecure
         )
     }
 }
