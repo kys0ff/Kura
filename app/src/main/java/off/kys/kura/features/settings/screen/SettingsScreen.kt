@@ -53,7 +53,6 @@ class SettingsScreen : Screen {
         val uriHandler = LocalUriHandler.current
 
         var lockTimeout by remember { mutableLongStateOf(prefs.lockTimeout) }
-        var lockOnExit by remember { mutableStateOf(prefs.lockOnExit) }
         var vibration by remember { mutableStateOf(prefs.vibrationEnabled) }
 
         Scaffold(
@@ -72,17 +71,6 @@ class SettingsScreen : Screen {
                         prefs.lockTimeout = it
                     }
                 }
-                /*item {
-                    ProtectionToggleRow(
-                        title = stringResource(R.string.lock_on_recent_tasks_close_title),
-                        description = stringResource(R.string.lock_on_recent_tasks_close_desc),
-                        checked = lockOnExit,
-                        onCheckedChange = {
-                            lockOnExit = it
-                            prefs.lockOnExit = it
-                        }
-                    )
-                }*/
 
                 // --- SECTION: FEEDBACK ---
                 item { SettingHeader(stringResource(R.string.feedback)) }
