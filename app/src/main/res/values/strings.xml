@@ -55,4 +55,9 @@
     <string name="badge_crucial">Crucial</string>
     <string name="badge_recommended">Recommended</string>
     <string name="badge_has_lock">Has in-app lock</string>
+    <string name="filter">Filter bu badges</string>
+    <string name="no_apps_match_these_filters">No apps match these filters</string>
+    <string name="apply">Apply</string>
+    <string name="cancel">Cancel</string>
+    <string name="filter_by_badge">Filter apps by badge:</string>
 </resources>

@@ -37,8 +37,10 @@ class MainViewModel(
     }
 
     private fun loadInitialData() {
+        val allApps = resolver.getInstalledApps()
         uiState = uiState.copy(
-            installedApps = resolver.getInstalledApps(),
+            installedApps = allApps,
+            filteredApps = allApps,
             lockedApps = lockManager.getLockedPackages()
         )
         badgeLoader.loadJson()
@@ -71,6 +73,27 @@ class MainViewModel(
             is MainUiEvent.ToggleSelfLock -> {
                 lockManager.updatePackageLock(KURA_PACKAGE, event.shouldLock)
                 uiState = uiState.copy(lockedApps = lockManager.getLockedPackages())
+            }
+
+            is MainUiEvent.FilterApps -> {
+                // 1. Update the active filters in state
+                val newFilters = event.badges
+
+                // 2. Perform filtering logic
+                val filtered = if (newFilters.isEmpty()) {
+                    uiState.installedApps
+                } else {
+                    uiState.installedApps.filter { app ->
+                        val appBadges = badgeLoader.getBadges(app.packageName)
+                        // Show app if it contains ANY of the selected filter badges
+                        appBadges.any { it in newFilters }
+                    }
+                }
+
+                uiState = uiState.copy(
+                    activeFilters = newFilters,
+                    filteredApps = filtered
+                )
             }
 
             is MainUiEvent.DeactivateAdmin -> {

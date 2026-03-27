@@ -4,16 +4,25 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -22,7 +31,14 @@ import off.kys.kura.core.data.model.AppInfo
 import off.kys.kura.features.main.data.Badge
 
 @Composable
-fun AppSelectionHeader(areAllLocked: Boolean, onToggleAll: () -> Unit) {
+fun AppSelectionHeader(
+    areAllLocked: Boolean,
+    onToggleAll: () -> Unit,
+    activeFilters: Set<Badge>,
+    onFilterChanged: (Set<Badge>) -> Unit
+) {
+    var showDialog by remember { mutableStateOf(false) }
+
     Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
         Text(
             text = stringResource(R.string.select_apps_to_lock),
@@ -30,9 +46,41 @@ fun AppSelectionHeader(areAllLocked: Boolean, onToggleAll: () -> Unit) {
             color = MaterialTheme.colorScheme.primary,
             modifier = Modifier.weight(1f)
         )
+
         TextButton(onClick = onToggleAll) {
             Text(stringResource(if (areAllLocked) R.string.unlock_all else R.string.lock_all))
         }
+
+        // The Filter Icon
+        IconButton(onClick = { showDialog = true }) {
+            val iconPainter = if (activeFilters.isNotEmpty())
+                painterResource(R.drawable.baseline_filter_alt_24)
+            else
+                painterResource(R.drawable.outline_filter_alt_24)
+
+            val iconTint = if (activeFilters.isNotEmpty())
+                MaterialTheme.colorScheme.primary
+            else
+                MaterialTheme.colorScheme.onSurfaceVariant
+
+
+            Icon(
+                painter = iconPainter,
+                contentDescription = stringResource(R.string.filter),
+                tint = iconTint
+            )
+        }
+    }
+
+    if (showDialog) {
+        BadgeFilterDialog(
+            initialSelected = activeFilters,
+            onDismiss = {
+                @Suppress("AssignedValueIsNeverRead")
+                showDialog = false
+            },
+            onApply = onFilterChanged
+        )
     }
 }
 
@@ -46,7 +94,7 @@ fun AppItemRow(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 12.dp), // Increased padding for better touch targets
+            .padding(vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
@@ -62,7 +110,6 @@ fun AppItemRow(
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
 
-            // --- BADGES VIEW ---
             if (badges.isNotEmpty()) {
                 FlowRow(
                     modifier = Modifier.padding(vertical = 4.dp),
@@ -75,6 +122,8 @@ fun AppItemRow(
                 }
             }
         }
+
+        Spacer(Modifier.size(8.dp))
 
         Switch(
             checked = isLocked,
