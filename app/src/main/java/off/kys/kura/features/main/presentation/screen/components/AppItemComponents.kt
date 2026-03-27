@@ -91,11 +91,13 @@ private fun BadgeChip(badge: Badge) {
             MaterialTheme.colorScheme.errorContainer,
             MaterialTheme.colorScheme.onErrorContainer
         )
+
         Badge.RECOMMENDED -> Triple(
             R.string.badge_recommended,
             MaterialTheme.colorScheme.primaryContainer,
             MaterialTheme.colorScheme.onPrimaryContainer
         )
+
         Badge.HAS_IN_APP_LOCK -> Triple(
             R.string.badge_has_lock,
             MaterialTheme.colorScheme.secondaryContainer,
