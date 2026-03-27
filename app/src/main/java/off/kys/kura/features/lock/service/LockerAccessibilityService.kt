@@ -1,6 +1,6 @@
 @file:SuppressLint("AccessibilityPolicy")
 
-package off.kys.kura.features.lock.services
+package off.kys.kura.features.lock.service
 
 import android.accessibilityservice.AccessibilityService
 import android.annotation.SuppressLint
@@ -14,7 +14,7 @@ import android.view.accessibility.AccessibilityEvent
 import off.kys.kura.core.common.constants.KURA_PACKAGE
 import off.kys.kura.core.prefs.KuraPreferences
 import off.kys.kura.core.registry.LockSessionManager
-import off.kys.kura.features.lock.activity.LockActivity
+import off.kys.kura.features.lock.presentation.activity.LockActivity
 import org.koin.android.ext.android.inject
 
 private const val TAG = "LockerAccessibilityService"

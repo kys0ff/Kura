@@ -1,4 +1,4 @@
-package off.kys.kura.features.lock.screen
+package off.kys.kura.features.lock.presentation.screen
 
 import android.content.res.Configuration
 import androidx.compose.animation.core.EaseInOutCubic

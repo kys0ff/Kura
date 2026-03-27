@@ -4,7 +4,7 @@ import off.kys.kura.core.common.HapticFeedbackManager
 import off.kys.kura.core.common.PackageResolver
 import off.kys.kura.core.prefs.KuraPreferences
 import off.kys.kura.core.registry.LockSessionManager
-import off.kys.kura.features.lock.viewmodel.LockViewModel
+import off.kys.kura.features.lock.presentation.viewmodel.LockViewModel
 import off.kys.kura.features.main.domain.BadgeLoader
 import off.kys.kura.features.main.presentation.viewmodel.MainViewModel
 import org.koin.android.ext.koin.androidContext

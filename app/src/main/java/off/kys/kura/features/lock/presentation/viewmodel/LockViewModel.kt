@@ -1,4 +1,4 @@
-package off.kys.kura.features.lock.viewmodel
+package off.kys.kura.features.lock.presentation.viewmodel
 
 import androidx.biometric.BiometricPrompt
 import androidx.lifecycle.SavedStateHandle
@@ -14,9 +14,9 @@ import off.kys.kura.core.common.HapticFeedbackManager
 import off.kys.kura.core.common.PackageResolver
 import off.kys.kura.core.prefs.KuraPreferences
 import off.kys.kura.core.registry.LockSessionManager
-import off.kys.kura.features.lock.services.LockerAccessibilityService
-import off.kys.kura.features.lock.side_effect.LockSideEffect
-import off.kys.kura.features.lock.state.LockViewState
+import off.kys.kura.features.lock.service.LockerAccessibilityService
+import off.kys.kura.features.lock.presentation.side_effect.LockSideEffect
+import off.kys.kura.features.lock.presentation.state.LockViewState
 
 class LockViewModel(
     private val lockManager: LockSessionManager,

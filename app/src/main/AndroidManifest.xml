@@ -34,7 +34,7 @@
         </activity>
 
         <activity
-            android:name=".features.lock.activity.LockActivity"
+            android:name=".features.lock.presentation.activity.LockActivity"
             android:configChanges="orientation|screenSize|keyboardHidden"
             android:excludeFromRecents="true"
             android:launchMode="singleInstance"
@@ -45,7 +45,7 @@
             android:windowSoftInputMode="stateHidden" />
 
         <service
-            android:name=".features.lock.services.LockerAccessibilityService"
+            android:name=".features.lock.service.LockerAccessibilityService"
             android:exported="false"
             android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"
             tools:ignore="AccessibilityPolicy">

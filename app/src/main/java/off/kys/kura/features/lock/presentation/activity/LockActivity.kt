@@ -1,4 +1,4 @@
-package off.kys.kura.features.lock.activity
+package off.kys.kura.features.lock.presentation.activity
 
 import android.content.Intent
 import android.os.Bundle
@@ -15,9 +15,9 @@ import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 import off.kys.kura.R
 import off.kys.kura.core.designsystem.theme.KuraTheme
-import off.kys.kura.features.lock.screen.LockScreen
-import off.kys.kura.features.lock.side_effect.LockSideEffect
-import off.kys.kura.features.lock.viewmodel.LockViewModel
+import off.kys.kura.features.lock.presentation.screen.LockScreen
+import off.kys.kura.features.lock.presentation.side_effect.LockSideEffect
+import off.kys.kura.features.lock.presentation.viewmodel.LockViewModel
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class LockActivity : FragmentActivity() {

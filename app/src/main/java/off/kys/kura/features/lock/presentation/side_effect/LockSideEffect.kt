@@ -1,4 +1,4 @@
-package off.kys.kura.features.lock.side_effect
+package off.kys.kura.features.lock.presentation.side_effect
 
 sealed class LockSideEffect {
     object Finish : LockSideEffect()
