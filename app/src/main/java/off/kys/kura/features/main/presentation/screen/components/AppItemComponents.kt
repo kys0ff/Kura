@@ -56,6 +56,12 @@ fun AppItemRow(
                 style = MaterialTheme.typography.titleMedium
             )
 
+            Text(
+                text = app.packageName,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+
             // --- BADGES VIEW ---
             if (badges.isNotEmpty()) {
                 FlowRow(
@@ -68,12 +74,6 @@ fun AppItemRow(
                     }
                 }
             }
-
-            Text(
-                text = app.packageName,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
         }
 
         Switch(
@@ -109,7 +109,7 @@ private fun BadgeChip(badge: Badge) {
         contentColor = contentColor
     ) {
         Text(
-            text = stringResource(labelRes).uppercase(),
+            text = stringResource(labelRes),
             style = MaterialTheme.typography.labelSmall,
             modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
             fontWeight = FontWeight.Bold
