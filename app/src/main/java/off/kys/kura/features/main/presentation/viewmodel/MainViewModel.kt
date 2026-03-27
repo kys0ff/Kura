@@ -76,17 +76,12 @@ class MainViewModel(
             }
 
             is MainUiEvent.FilterApps -> {
-                // 1. Update the active filters in state
                 val newFilters = event.badges
-
-                // 2. Perform filtering logic
                 val filtered = if (newFilters.isEmpty()) {
                     uiState.installedApps
                 } else {
                     uiState.installedApps.filter { app ->
-                        val appBadges = badgeLoader.getBadges(app.packageName)
-                        // Show app if it contains ANY of the selected filter badges
-                        appBadges.any { it in newFilters }
+                        badgeLoader.getBadges(app.packageName).any { it in newFilters }
                     }
                 }
 
@@ -94,6 +89,7 @@ class MainViewModel(
                     activeFilters = newFilters,
                     filteredApps = filtered
                 )
+                syncLockState()
             }
 
             is MainUiEvent.DeactivateAdmin -> {
@@ -105,20 +101,40 @@ class MainViewModel(
             }
 
             is MainUiEvent.LockAllApps -> {
-                val allPackageNames = uiState.installedApps.map { it.packageName }
-                allPackageNames.forEach { lockManager.updatePackageLock(it, true) }
-                uiState = uiState.copy(lockedApps = lockManager.getLockedPackages())
+                if (uiState.filteredApps.isNotEmpty()) {
+                    uiState.filteredApps.forEach { app ->
+                        lockManager.updatePackageLock(app.packageName, true)
+                    }
+                } else {
+                    uiState.installedApps.forEach { app ->
+                        lockManager.updatePackageLock(app.packageName, true)
+                    }
+                }
+                syncLockState()
             }
 
             is MainUiEvent.UnlockAllApps -> {
-                val allPackagesNames = uiState.installedApps.map { it.packageName }
-                allPackagesNames.forEach { lockManager.updatePackageLock(it, false) }
-                uiState = uiState.copy(lockedApps = lockManager.getLockedPackages())
+                if (uiState.filteredApps.isNotEmpty()) {
+                    uiState.filteredApps.forEach { app ->
+                        lockManager.updatePackageLock(app.packageName, false)
+                    }
+                } else {
+                    uiState.installedApps.forEach { app ->
+                        lockManager.updatePackageLock(app.packageName, false)
+                    }
+                }
+                syncLockState()
             }
         }
     }
 
     fun getBadges(packageName: String): List<Badge> = badgeLoader.getBadges(packageName)
+
+    private fun syncLockState() {
+        val currentLocked = lockManager.getLockedPackages()
+
+        uiState = uiState.copy(lockedApps = currentLocked)
+    }
 
     private fun updateSystemStates(context: Context) {
         val dpm = context.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
