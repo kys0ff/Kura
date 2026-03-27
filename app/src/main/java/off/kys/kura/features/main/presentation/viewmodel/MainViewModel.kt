@@ -17,13 +17,16 @@ import off.kys.kura.core.common.constants.ANDROID_UNINSTALLER_PACKAGES
 import off.kys.kura.core.common.constants.KURA_PACKAGE
 import off.kys.kura.core.common.extensions.isAccessibilityServiceEnabled
 import off.kys.kura.core.registry.LockSessionManager
+import off.kys.kura.features.main.data.Badge
+import off.kys.kura.features.main.domain.BadgeLoader
 import off.kys.kura.features.main.presentation.event.MainUiEvent
 import off.kys.kura.features.main.presentation.state.MainViewState
 
 class MainViewModel(
     private val application: Application,
     private val resolver: PackageResolver,
-    private val lockManager: LockSessionManager
+    private val lockManager: LockSessionManager,
+    private val badgeLoader: BadgeLoader
 ) : AndroidViewModel(application) {
 
     var uiState by mutableStateOf(MainViewState())
@@ -38,6 +41,7 @@ class MainViewModel(
             installedApps = resolver.getInstalledApps(),
             lockedApps = lockManager.getLockedPackages()
         )
+        badgeLoader.loadJson()
     }
 
     fun onEvent(event: MainUiEvent) {
@@ -90,6 +94,8 @@ class MainViewModel(
             }
         }
     }
+
+    fun getBadges(packageName: String): List<Badge> = badgeLoader.getBadges(packageName)
 
     private fun updateSystemStates(context: Context) {
         val dpm = context.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager

@@ -62,7 +62,6 @@ class MainScreen : Screen {
         val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
         val adminComponent = remember { ComponentName(context, LockerAdminReceiver::class.java) }
 
-        // State to manage one-time visibility of the banner
         var showKeepAndroidOpenNotice by rememberSaveable { mutableStateOf(true) }
 
         LifecycleResumeEffect(Unit) {
@@ -175,9 +174,15 @@ class MainScreen : Screen {
                 items(state.installedApps, key = { it.packageName }) { app ->
                     AppItemRow(
                         app = app,
+                        badges = viewModel.getBadges(app.packageName),
                         isLocked = state.lockedApps.contains(app.packageName),
-                        onToggle = {
-                            viewModel.onEvent(MainUiEvent.ToggleAppLock(app.packageName, it))
+                        onToggle = { shouldLock ->
+                            viewModel.onEvent(
+                                MainUiEvent.ToggleAppLock(
+                                    app.packageName,
+                                    shouldLock
+                                )
+                            )
                         }
                     )
                 }

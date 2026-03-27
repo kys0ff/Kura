@@ -3,24 +3,26 @@ package off.kys.kura.features.main.domain
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
+import off.kys.kura.features.main.data.Badge // Import your Enum
 import java.net.HttpURLConnection
 import java.net.URL
 import java.util.concurrent.Executors
 
-private const val BADGES_JSON_URL = "https://raw.githubusercontent.com/kys0ff/Kura-Badges/refs/heads/main/badges.json"
+private const val BADGES_JSON_URL =
+    "https://raw.githubusercontent.com/kys0ff/Kura-Badges/refs/heads/main/badges.json"
 
 class BadgeLoader {
     private val json = Json {
         ignoreUnknownKeys = true
-        explicitNulls = false 
+        explicitNulls = false
+        coerceInputValues = true
     }
 
-    // Using a thread-safe volatile map for the cache
     @Volatile
-    private var badgeCache: Map<String, List<String>> = emptyMap()
+    private var badgeCache: Map<String, List<Badge>> = emptyMap()
 
     @OptIn(ExperimentalSerializationApi::class)
-    fun loadJson(onComplete: (Boolean) -> Unit) {
+    fun loadJson(onComplete: (Boolean) -> Unit = {}) {
         Executors.newSingleThreadExecutor().execute {
             var connection: HttpURLConnection? = null
             try {
@@ -32,11 +34,16 @@ class BadgeLoader {
                     readTimeout = 15000
                 }
 
-                connection.inputStream.use { stream ->
-                    badgeCache = json.decodeFromStream<Map<String, List<String>>>(stream)
+                if (connection.responseCode == HttpURLConnection.HTTP_OK) {
+                    connection.inputStream.use { stream ->
+                        // decoding directly to List<Badge>
+                        badgeCache = json.decodeFromStream<Map<String, List<Badge>>>(stream)
+                    }
+                    onComplete(true)
+                } else {
+                    onComplete(false)
                 }
-                
-                onComplete(true)
+
             } catch (e: Exception) {
                 e.printStackTrace()
                 onComplete(false)
@@ -46,5 +53,5 @@ class BadgeLoader {
         }
     }
 
-    fun getBadges(packageName: String): List<String> = badgeCache[packageName] ?: emptyList()
+    fun getBadges(packageName: String): List<Badge> = badgeCache[packageName] ?: emptyList()
 }

@@ -17,6 +17,6 @@ val appModule = module {
     single { KuraPreferences(androidContext()) }
     single { HapticFeedbackManager(androidContext()) }
     single { BadgeLoader() }
-    viewModel { MainViewModel(get(), get(), get()) }
+    viewModel { MainViewModel(get(),get(), get(), get()) }
     viewModel { LockViewModel(get(), get(), get(), get(), get()) }
 }

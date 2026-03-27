@@ -52,4 +52,7 @@
     <string name="no_device_security_title">Device Not Secured</string>
     <string name="no_device_security_desc">Kura requires a system PIN, Pattern, or Password to lock your apps. Without one, anyone can open the locker and your protected apps.</string>
     <string name="configure_lock">Set Password</string>
+    <string name="badge_crucial">Crucial</string>
+    <string name="badge_recommended">Recommended</string>
+    <string name="badge_has_lock">Has in-app lock</string>
 </resources>
