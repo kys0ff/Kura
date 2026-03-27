@@ -155,6 +155,12 @@ private fun BadgeChip(badge: Badge) {
             MaterialTheme.colorScheme.secondaryContainer,
             MaterialTheme.colorScheme.onSecondaryContainer
         )
+
+        Badge.NOT_RECOMMENDED -> Triple(
+            R.string.badge_not_recommended,
+            MaterialTheme.colorScheme.tertiaryContainer,
+            MaterialTheme.colorScheme.onTertiaryContainer
+        )
     }
 
     Surface(
