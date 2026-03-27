@@ -1,6 +1,6 @@
 @file:SuppressLint("LocalContextGetResourceValueCall")
 
-package off.kys.kura.features.main.screen
+package off.kys.kura.features.main.presentation.screen
 
 import android.annotation.SuppressLint
 import android.app.admin.DevicePolicyManager
@@ -39,14 +39,14 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import off.kys.kura.R
 import off.kys.kura.core.admin.LockerAdminReceiver
-import off.kys.kura.features.main.event.MainUiEvent
-import off.kys.kura.features.main.screen.components.AppItemRow
-import off.kys.kura.features.main.screen.components.AppSelectionHeader
-import off.kys.kura.features.main.screen.components.KeepAndroidOpenNotice
-import off.kys.kura.features.main.screen.components.NoDeviceSecurityNotice
-import off.kys.kura.features.main.screen.components.PermissionCard
-import off.kys.kura.features.main.screen.components.SystemProtectionSection
-import off.kys.kura.features.main.viewmodel.MainViewModel
+import off.kys.kura.features.main.presentation.event.MainUiEvent
+import off.kys.kura.features.main.presentation.screen.components.AppItemRow
+import off.kys.kura.features.main.presentation.screen.components.AppSelectionHeader
+import off.kys.kura.features.main.presentation.screen.components.KeepAndroidOpenNotice
+import off.kys.kura.features.main.presentation.screen.components.NoDeviceSecurityNotice
+import off.kys.kura.features.main.presentation.screen.components.PermissionCard
+import off.kys.kura.features.main.presentation.screen.components.SystemProtectionSection
+import off.kys.kura.features.main.presentation.viewmodel.MainViewModel
 import off.kys.kura.features.settings.screen.SettingsScreen
 import org.koin.compose.koinInject
 
@@ -106,7 +106,6 @@ class MainScreen : Screen {
                         )
                     }
                 }
-
 
                 // --- Keep Android Open Notice ---
                 item {

@@ -1,4 +1,4 @@
-package off.kys.kura.features.main.state
+package off.kys.kura.features.main.presentation.state
 
 import off.kys.kura.core.common.constants.ANDROID_SETTINGS_PACKAGE
 import off.kys.kura.core.common.constants.ANDROID_UNINSTALLER_PACKAGES

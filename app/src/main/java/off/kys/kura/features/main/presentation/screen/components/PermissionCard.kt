@@ -1,4 +1,4 @@
-package off.kys.kura.features.main.screen.components
+package off.kys.kura.features.main.presentation.screen.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -18,7 +18,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import off.kys.kura.R
-import off.kys.kura.features.main.state.MainViewState
+import off.kys.kura.features.main.presentation.state.MainViewState
 
 @Composable
 fun PermissionCard(

@@ -41,7 +41,7 @@ import off.kys.kura.BuildConfig
 import off.kys.kura.R
 import off.kys.kura.core.designsystem.theme.KuraTheme
 import off.kys.kura.core.prefs.KuraPreferences
-import off.kys.kura.features.main.screen.components.ProtectionToggleRow
+import off.kys.kura.features.main.presentation.screen.components.ProtectionToggleRow
 import org.koin.compose.koinInject
 
 class SettingsScreen : Screen {

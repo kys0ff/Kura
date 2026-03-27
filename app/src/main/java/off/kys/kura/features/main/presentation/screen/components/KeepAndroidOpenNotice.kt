@@ -1,4 +1,4 @@
-package off.kys.kura.features.main.screen.components
+package off.kys.kura.features.main.presentation.screen.components
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Spring

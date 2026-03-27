@@ -23,7 +23,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Kura">
         <activity
-            android:name=".features.main.activity.MainActivity"
+            android:name=".features.main.presentation.activity.MainActivity"
             android:exported="true"
             android:theme="@style/Theme.Kura">
             <intent-filter>

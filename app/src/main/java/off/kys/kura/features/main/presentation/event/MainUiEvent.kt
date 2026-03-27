@@ -1,4 +1,4 @@
-package off.kys.kura.features.main.event
+package off.kys.kura.features.main.presentation.event
 
 sealed class MainUiEvent {
     data class ToggleAppLock(val packageName: String, val shouldLock: Boolean) : MainUiEvent()

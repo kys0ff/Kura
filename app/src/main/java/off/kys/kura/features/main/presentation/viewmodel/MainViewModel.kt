@@ -1,4 +1,4 @@
-package off.kys.kura.features.main.viewmodel
+package off.kys.kura.features.main.presentation.viewmodel
 
 import android.app.Application
 import android.app.KeyguardManager
@@ -17,8 +17,8 @@ import off.kys.kura.core.common.constants.ANDROID_UNINSTALLER_PACKAGES
 import off.kys.kura.core.common.constants.KURA_PACKAGE
 import off.kys.kura.core.common.extensions.isAccessibilityServiceEnabled
 import off.kys.kura.core.registry.LockSessionManager
-import off.kys.kura.features.main.event.MainUiEvent
-import off.kys.kura.features.main.state.MainViewState
+import off.kys.kura.features.main.presentation.event.MainUiEvent
+import off.kys.kura.features.main.presentation.state.MainViewState
 
 class MainViewModel(
     private val application: Application,
