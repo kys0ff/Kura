@@ -76,8 +76,7 @@ class LockerAccessibilityService : AccessibilityService() {
                 if (currentPackage == lastUnlockedPackage) {
                     val currentTime = System.currentTimeMillis()
                     if (currentTime - lastUnlockTime > DISK_WRITE_THROTTLE) {
-                        lastUnlockTime = currentTime
-                        refreshSession(currentPackage)
+                        refreshSession(currentPackage, currentTime)
                     }
                 }
             }
@@ -96,7 +95,7 @@ class LockerAccessibilityService : AccessibilityService() {
 
         if (currentPackage == lastPackageName && currentPackage == lastUnlockedPackage) {
             lastUnlockTime = currentTime
-            refreshSession(currentPackage)
+            refreshSession(currentPackage, lastUnlockTime)
             return
         }
 
@@ -107,16 +106,13 @@ class LockerAccessibilityService : AccessibilityService() {
 
             if (isMemoryValid) {
                 // User is active and within time. Refresh the heartbeat.
-                lastUnlockTime = currentTime
-                refreshSession(currentPackage)
+                refreshSession(currentPackage, currentTime)
             } else {
                 // Memory check failed (or it's a different app).
                 // Fallback to Disk: Check if a valid session exists in SharedPreferences.
                 if (registry.isSessionValid(currentPackage)) {
                     // Disk says it's okay! Sync memory so next event is a "Fast Check".
-                    lastUnlockedPackage = currentPackage
-                    lastUnlockTime = currentTime
-                    refreshSession(currentPackage)
+                    refreshSession(currentPackage, currentTime)
                 } else {
                     // Both Memory and Disk failed. Trigger Lock.
                     launchLockScreen(currentPackage)
@@ -129,7 +125,9 @@ class LockerAccessibilityService : AccessibilityService() {
 
     override fun onInterrupt() {}
 
-    private fun refreshSession(packageName: String) {
+    private fun refreshSession(packageName: String, currentTime: Long = System.currentTimeMillis()) {
+        lastUnlockTime = currentTime
+        lastUnlockedPackage = packageName
         registry.saveUnlockTimestamp(packageName)
     }
 
