@@ -35,7 +35,7 @@ class LockerAccessibilityService : AccessibilityService() {
     private var lastPackageName: String? = null
 
     companion object {
-        private const val DISK_WRITE_THROTTLE = 5_000L
+        private const val DISK_WRITE_THROTTLE: Long = 1_000L
         var lastUnlockedPackage: String? = null
         var lastUnlockTime: Long = 0
     }
@@ -45,7 +45,6 @@ class LockerAccessibilityService : AccessibilityService() {
 
         val filter = IntentFilter(Intent.ACTION_SCREEN_OFF)
 
-        // For Android 14+ (API 34) support:
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
             registerReceiver(screenOffReceiver, filter, RECEIVER_NOT_EXPORTED)
         } else {
@@ -74,19 +73,16 @@ class LockerAccessibilityService : AccessibilityService() {
 
             AccessibilityEvent.TYPE_VIEW_CLICKED,
             AccessibilityEvent.TYPE_VIEW_SCROLLED -> {
-                // Logic for staying in the app (The Heartbeat)
-                // We only care if this is the app we ALREADY verified
                 if (currentPackage == lastUnlockedPackage) {
                     val currentTime = System.currentTimeMillis()
-                    // Only "process" the interaction if 5 seconds have passed since the last one
-                    // This saves CPU and prevents the "Double-Save" lag
                     if (currentTime - lastUnlockTime > DISK_WRITE_THROTTLE) {
+                        lastUnlockTime = currentTime
                         refreshSession(currentPackage)
                     }
                 }
             }
 
-            else -> Log.d(TAG, "onAccessibilityEvent: Unhandled event: $event")
+            else -> {}
         }
     }
 
@@ -94,28 +90,24 @@ class LockerAccessibilityService : AccessibilityService() {
         val currentPackage = event.packageName?.toString() ?: return
         val currentTime = System.currentTimeMillis()
 
-        // 1. Exit early for our own Lock Screen
         if (currentPackage == KURA_PACKAGE) {
             if (event.className?.toString()?.contains("LockActivity") == true) return
         }
 
-        // 2. The "Exit Save" Logic
-        // If we just moved AWAY from a locked app that was valid, save its exit time.
-        val last = lastPackageName
-        if (last != null && last != currentPackage &&
-            registry.isPackageLocked(last) && registry.isSessionValid(last)) {
-            refreshSession(last)
+        if (currentPackage == lastPackageName && currentPackage == lastUnlockedPackage) {
+            lastUnlockTime = currentTime
+            refreshSession(currentPackage)
+            return
         }
 
-        // 3. The Unified "Am I allowed to be here?" Check
         if (registry.isPackageLocked(currentPackage)) {
-
             // Fast Check: Is this the package we just unlocked, AND is the timer still valid?
             val isMemoryValid = (currentPackage == lastUnlockedPackage) &&
                     (currentTime - lastUnlockTime < appPrefs.lockTimeout)
 
             if (isMemoryValid) {
                 // User is active and within time. Refresh the heartbeat.
+                lastUnlockTime = currentTime
                 refreshSession(currentPackage)
             } else {
                 // Memory check failed (or it's a different app).
@@ -132,7 +124,6 @@ class LockerAccessibilityService : AccessibilityService() {
             }
         }
 
-        // Always update lastPackageName at the end
         lastPackageName = currentPackage
     }
 
