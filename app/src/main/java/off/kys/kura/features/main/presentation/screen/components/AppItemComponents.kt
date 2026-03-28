@@ -119,7 +119,7 @@ fun AppItemRow(
                     horizontalArrangement = Arrangement.spacedBy(6.dp),
                     verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
-                    badges.forEach { badge ->
+                    badges.sortedBy { it.index }.forEach { badge ->
                         BadgeChip(badge)
                     }
                 }
