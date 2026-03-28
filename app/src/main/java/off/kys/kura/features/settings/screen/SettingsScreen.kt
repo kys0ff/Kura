@@ -81,6 +81,7 @@ class SettingsScreen : Screen {
                             onCheckedChange = {
                                 dynamicColor = it
                                 prefs.dynamicColorEnabled = it
+                                mainActivity.recreate()
                             }
                         )
                     }
