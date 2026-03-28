@@ -6,6 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricPrompt
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.core.content.ContextCompat
@@ -15,14 +16,17 @@ import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 import off.kys.kura.R
 import off.kys.kura.core.designsystem.theme.KuraTheme
+import off.kys.kura.core.prefs.KuraPreferences
 import off.kys.kura.features.lock.presentation.screen.LockScreen
 import off.kys.kura.features.lock.presentation.side_effect.LockSideEffect
 import off.kys.kura.features.lock.presentation.viewmodel.LockViewModel
+import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class LockActivity : FragmentActivity() {
 
     private val viewModel: LockViewModel by viewModel()
+    private val kuraPreferences: KuraPreferences by inject()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,7 +43,17 @@ class LockActivity : FragmentActivity() {
         }
 
         setContent {
-            KuraTheme {
+            val themeMode = kuraPreferences.themeMode
+            val dynamicColor = kuraPreferences.dynamicColorEnabled
+
+            KuraTheme(
+                darkTheme = when (themeMode) {
+                    "LIGHT" -> false
+                    "DARK" -> true
+                    else -> isSystemInDarkTheme()
+                },
+                dynamicColor = dynamicColor
+            ) {
                 val state by viewModel.uiState.collectAsStateWithLifecycle()
                 LockScreen()
 

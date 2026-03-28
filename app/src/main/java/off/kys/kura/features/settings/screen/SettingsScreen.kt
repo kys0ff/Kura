@@ -2,7 +2,10 @@
 
 package off.kys.kura.features.settings.screen
 
+import android.os.Build
+import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -41,6 +44,7 @@ import off.kys.kura.BuildConfig
 import off.kys.kura.R
 import off.kys.kura.core.designsystem.theme.KuraTheme
 import off.kys.kura.core.prefs.KuraPreferences
+import off.kys.kura.features.main.presentation.activity.MainActivity
 import off.kys.kura.features.main.presentation.screen.components.ProtectionToggleRow
 import org.koin.compose.koinInject
 
@@ -51,6 +55,7 @@ class SettingsScreen : Screen {
     override fun Content() {
         val prefs: KuraPreferences = koinInject()
         val uriHandler = LocalUriHandler.current
+        val mainActivity = LocalActivity.current as MainActivity
 
         var lockTimeout by remember { mutableLongStateOf(prefs.lockTimeout) }
         var vibration by remember { mutableStateOf(prefs.vibrationEnabled) }
@@ -63,6 +68,32 @@ class SettingsScreen : Screen {
                     .fillMaxSize()
                     .padding(padding)
             ) {
+                // --- SECTION: APPEARANCE ---
+                item { SettingHeader(stringResource(R.string.appearance)) }
+                // Only show Dynamic Color option if API >= 31
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    item {
+                        var dynamicColor by remember { mutableStateOf(prefs.dynamicColorEnabled) }
+                        ProtectionToggleRow(
+                            title = stringResource(R.string.dynamic_color_title),
+                            description = stringResource(R.string.dynamic_color_desc),
+                            checked = dynamicColor,
+                            onCheckedChange = {
+                                dynamicColor = it
+                                prefs.dynamicColorEnabled = it
+                            }
+                        )
+                    }
+                }
+                item {
+                    var themeMode by remember { mutableStateOf(prefs.themeMode) }
+                    ThemeSelector(themeMode) { selectedTheme ->
+                        themeMode = selectedTheme
+                        prefs.themeMode = selectedTheme
+                        mainActivity.recreate()
+                    }
+                }
+
                 // --- SECTION: SECURITY BEHAVIOR ---
                 item { SettingHeader(stringResource(R.string.security_behavior)) }
                 item {
@@ -118,6 +149,58 @@ class SettingsScreen : Screen {
                 }
 
                 item { Spacer(modifier = Modifier.height(32.dp)) }
+            }
+        }
+    }
+
+    @Composable
+    private fun ThemeSelector(currentTheme: String, onThemeSelected: (String) -> Unit) {
+        val options = listOf(
+            "SYSTEM" to stringResource(R.string.theme_system),
+            "LIGHT" to stringResource(R.string.theme_light),
+            "DARK" to stringResource(R.string.theme_dark)
+        )
+
+        var expanded by remember { mutableStateOf(false) }
+        val currentLabel = options.find { it.first == currentTheme }?.second ?: options[0].second
+
+        Box(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+            OutlinedButton(
+                onClick = { expanded = true },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(text = stringResource(R.string.app_theme))
+                    Text(text = currentLabel, color = MaterialTheme.colorScheme.primary)
+                }
+            }
+
+            DropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false },
+                modifier = Modifier.fillMaxWidth(0.9f) // Keep it almost full width
+            ) {
+                options.forEach { (mode, label) ->
+                    DropdownMenuItem(
+                        text = { Text(label) },
+                        onClick = {
+                            onThemeSelected(mode)
+                            expanded = false
+                        },
+                        leadingIcon = {
+                            val icon = when (mode) {
+                                "LIGHT" -> R.drawable.round_light_mode_24
+                                "DARK" -> R.drawable.round_mode_night_24
+                                else -> R.drawable.round_settings_brightness_24
+                            }
+                            Icon(painterResource(icon), contentDescription = null)
+                        }
+                    )
+                }
             }
         }
     }
@@ -188,11 +271,17 @@ class SettingsScreen : Screen {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
-            Column(modifier = Modifier
-                .padding(start = 16.dp)
-                .weight(1f)) {
+            Column(
+                modifier = Modifier
+                    .padding(start = 16.dp)
+                    .weight(1f)
+            ) {
                 Text(title, style = MaterialTheme.typography.bodyLarge)
-                Text(description, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(
+                    description,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
             Icon(
                 painter = painterResource(R.drawable.round_open_in_new_24),
@@ -218,7 +307,11 @@ class SettingsScreen : Screen {
             )
             Column(modifier = Modifier.padding(start = 16.dp)) {
                 Text(title, style = MaterialTheme.typography.bodyLarge)
-                Text(value, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(
+                    value,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
         }
     }

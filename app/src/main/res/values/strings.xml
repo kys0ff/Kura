@@ -61,4 +61,11 @@
     <string name="cancel">Cancel</string>
     <string name="filter_by_badge">Filter apps by badge:</string>
     <string name="badge_not_recommended">Not Recommended</string>
+    <string name="appearance">Appearance</string>
+    <string name="app_theme">App Theme</string>
+    <string name="theme_system">System Default</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_dark">Dark</string>
+    <string name="dynamic_color_title">Dynamic Color</string>
+    <string name="dynamic_color_desc">Use colors from your wallpaper</string>
 </resources>
