@@ -134,7 +134,6 @@ class SettingsScreen : Screen {
 
                 // --- SECTION: ABOUT KURA ---
                 item { SettingHeader(stringResource(R.string.about_kura)) }
-
                 item {
                     SettingActionRow(
                         title = stringResource(R.string.github_repo),
@@ -143,7 +142,6 @@ class SettingsScreen : Screen {
                         onClick = { uriHandler.openUri(KURA_GITHUB_REPO_URL) }
                     )
                 }
-
                 item {
                     SettingActionRow(
                         title = stringResource(R.string.privacy_policy),
@@ -154,12 +152,18 @@ class SettingsScreen : Screen {
                         }
                     )
                 }
-
                 item {
                     SettingInfoRow(
                         title = stringResource(R.string.app_version),
                         value = "${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})",
                         icon = painterResource(R.drawable.round_info_24)
+                    )
+                }
+                item {
+                    SettingInfoRow(
+                        title = stringResource(R.string.build_time),
+                        value = BuildConfig.BUILD_TIME,
+                        icon = painterResource(R.drawable.round_calendar_today_24)
                     )
                 }
 
