@@ -32,7 +32,6 @@ class LockerAccessibilityService : AccessibilityService() {
             registry.clearAllSessions()
         }
     }
-    private var lastPackageName: String? = null
 
     companion object {
         private const val DISK_WRITE_THROTTLE: Long = 1_000L
@@ -89,43 +88,40 @@ class LockerAccessibilityService : AccessibilityService() {
         val currentPackage = event.packageName?.toString() ?: return
         val currentTime = System.currentTimeMillis()
 
-        if (currentPackage == KURA_PACKAGE) {
-            if (event.className?.toString()?.contains("LockActivity") == true) return
-        }
+        // 1. Ignore if it's our own lock screen or the system launcher
+        if (isIgnoredPackage(event)) return
 
-        if (currentPackage == lastPackageName && currentPackage == lastUnlockedPackage) {
-            lastUnlockTime = currentTime
-            refreshSession(currentPackage, lastUnlockTime)
-            return
-        }
+        // 2. The "User was just here" Check
+        val timeSinceLastInteraction = currentTime - lastUnlockTime
+        val isWithinGracePeriod = timeSinceLastInteraction < appPrefs.lockTimeout
 
         if (registry.isPackageLocked(currentPackage)) {
-            // Fast Check: Is this the package we just unlocked, AND is the timer still valid?
-            val isMemoryValid = (currentPackage == lastUnlockedPackage) &&
-                    (currentTime - lastUnlockTime < appPrefs.lockTimeout)
-
-            if (isMemoryValid) {
-                // User is active and within time. Refresh the heartbeat.
+            if (currentPackage == lastUnlockedPackage && isWithinGracePeriod) {
+                // User just came back or is still here.
+                refreshSession(currentPackage, currentTime)
+            } else if (registry.isSessionValid(currentPackage)) {
+                // Disk session is still valid.
                 refreshSession(currentPackage, currentTime)
             } else {
-                // Memory check failed (or it's a different app).
-                // Fallback to Disk: Check if a valid session exists in SharedPreferences.
-                if (registry.isSessionValid(currentPackage)) {
-                    // Disk says it's okay! Sync memory so next event is a "Fast Check".
-                    refreshSession(currentPackage, currentTime)
-                } else {
-                    // Both Memory and Disk failed. Trigger Lock.
-                    launchLockScreen(currentPackage)
-                }
+                // Truly expired or a brand-new app.
+                launchLockScreen(currentPackage)
             }
         }
+    }
 
-        lastPackageName = currentPackage
+    private fun isIgnoredPackage(event: AccessibilityEvent): Boolean {
+        if (event.packageName == KURA_PACKAGE) {
+            return event.className?.toString()?.contains("LockActivity") == true
+        }
+        return false
     }
 
     override fun onInterrupt() {}
 
-    private fun refreshSession(packageName: String, currentTime: Long = System.currentTimeMillis()) {
+    private fun refreshSession(
+        packageName: String,
+        currentTime: Long = System.currentTimeMillis()
+    ) {
         lastUnlockTime = currentTime
         lastUnlockedPackage = packageName
         registry.saveUnlockTimestamp(packageName)
