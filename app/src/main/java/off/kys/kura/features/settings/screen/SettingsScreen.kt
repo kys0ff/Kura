@@ -254,7 +254,7 @@ class SettingsScreen : Screen {
             60_000L to stringResource(R.string._1_minute),
             300_000L to stringResource(R.string._5_minutes),
             900_000L to stringResource(R.string._15_minutes),
-            -1L to stringResource(R.string.never)
+            Long.MAX_VALUE to stringResource(R.string.never)
         )
 
         var expanded by remember { mutableStateOf(false) }
