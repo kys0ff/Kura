@@ -96,8 +96,7 @@ class LockerAccessibilityService : AccessibilityService() {
 
         // 2. The "User was just here" Check
         val timeSinceLastInteraction = currentTime - lastUnlockTime
-        val isWithinGracePeriod =
-            appPrefs.lockTimeout != -1L && timeSinceLastInteraction < appPrefs.lockTimeout
+        val isWithinGracePeriod = appPrefs.lockTimeout == -1L || timeSinceLastInteraction < appPrefs.lockTimeout
 
         if (registry.isPackageLocked(currentPackage)) {
             if (currentPackage == lastUnlockedPackage && isWithinGracePeriod) {
