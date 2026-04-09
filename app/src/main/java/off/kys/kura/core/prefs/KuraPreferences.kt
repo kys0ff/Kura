@@ -15,6 +15,7 @@ class KuraPreferences(context: Context) {
         const val KEY_THEME_MODE = "theme_mode"
         const val KEY_DYNAMIC_COLOR = "dynamic_color_enabled"
         const val KEY_RESET_ON_SCREEN_OFF = "reset_on_screen_off"
+        const val KEY_LOCK_ANIMATION = "lock_animation_enabled"
     }
 
     // Timeout in milliseconds (Default: 1 minute)
@@ -39,4 +40,8 @@ class KuraPreferences(context: Context) {
     var resetOnScreenOff: Boolean
         get() = prefs.getBoolean(KEY_RESET_ON_SCREEN_OFF, true)
         set(value) = prefs.edit { putBoolean(KEY_RESET_ON_SCREEN_OFF, value) }
+
+    var lockAnimationEnabled: Boolean
+        get() = prefs.getBoolean(KEY_LOCK_ANIMATION, true)
+        set(value) = prefs.edit { putBoolean(KEY_LOCK_ANIMATION, value) }
 }

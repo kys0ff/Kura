@@ -72,4 +72,6 @@
     <string name="reset_on_screen_off_title">Reset on Screen Off</string>
     <string name="reset_on_screen_off_desc">Immediately lock all apps when the screen is turned off, regardless of the timeout.</string>
     <string name="build_time">Build Time</string>
+    <string name="lock_animation_title">Lock Screen Animation</string>
+    <string name="lock_animation_desc">Enable the expressive pulse effect on the lock screen</string>
 </resources>

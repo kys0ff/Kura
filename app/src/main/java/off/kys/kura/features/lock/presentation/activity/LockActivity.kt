@@ -55,12 +55,13 @@ class LockActivity : FragmentActivity() {
                 dynamicColor = dynamicColor
             ) {
                 val state by viewModel.uiState.collectAsStateWithLifecycle()
-                LockScreen()
 
-                // Trigger prompt once when the view is ready
-                LaunchedEffect(key1 = Unit) {
+                LockScreen(showAnimation = kuraPreferences.lockAnimationEnabled)
+                LaunchedEffect(key1 = Unit) {  // Trigger prompt once when the view is ready
                     if (viewModel.targetPackage.isNotEmpty()) {
                         showBiometricPrompt(state.appName)
+                    } else {
+                        viewModel.onAuthError(BiometricPrompt.ERROR_USER_CANCELED)
                     }
                 }
             }

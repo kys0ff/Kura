@@ -96,6 +96,18 @@ class SettingsScreen : Screen {
                         mainActivity.recreate()
                     }
                 }
+                item {
+                    var lockAnimation by remember { mutableStateOf(prefs.lockAnimationEnabled) }
+                    ProtectionToggleRow(
+                        title = stringResource(R.string.lock_animation_title),
+                        description = stringResource(R.string.lock_animation_desc),
+                        checked = lockAnimation,
+                        onCheckedChange = {
+                            lockAnimation = it
+                            prefs.lockAnimationEnabled = it
+                        }
+                    )
+                }
 
                 // --- SECTION: SECURITY BEHAVIOR ---
                 item { SettingHeader(stringResource(R.string.security_behavior)) }
