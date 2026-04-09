@@ -62,9 +62,6 @@ class SettingsScreen : Screen {
         val mainActivity = LocalActivity.current as MainActivity
         val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
 
-        var lockTimeout by remember { mutableLongStateOf(prefs.lockTimeout) }
-        var vibration by remember { mutableStateOf(prefs.vibrationEnabled) }
-
         Scaffold(
             modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
             topBar = {
@@ -121,6 +118,7 @@ class SettingsScreen : Screen {
                 // --- SECTION: SECURITY BEHAVIOR ---
                 item { SettingHeader(stringResource(R.string.security_behavior)) }
                 item {
+                    var lockTimeout by remember { mutableLongStateOf(prefs.lockTimeout) }
                     TimeoutSelector(lockTimeout) {
                         lockTimeout = it
                         prefs.lockTimeout = it
@@ -142,6 +140,7 @@ class SettingsScreen : Screen {
                 // --- SECTION: FEEDBACK ---
                 item { SettingHeader(stringResource(R.string.feedback)) }
                 item {
+                    var vibration by remember { mutableStateOf(prefs.vibrationEnabled) }
                     ProtectionToggleRow(
                         title = stringResource(R.string.haptic_feedback_title),
                         description = stringResource(R.string.heptic_feedback_desc),
