@@ -1,8 +1,14 @@
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.serialization)
 }
+
+fun getBuildTime(): String = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault()).format(Date())
 
 android {
     namespace = "off.kys.kura"
@@ -18,6 +24,8 @@ android {
         targetSdk = 36
         versionCode = 3
         versionName = "1.0.3"
+
+        buildConfigField("String", "BUILD_TIME", "\"${getBuildTime()}\"")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
