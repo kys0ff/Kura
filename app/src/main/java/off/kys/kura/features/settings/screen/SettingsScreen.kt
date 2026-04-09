@@ -105,6 +105,18 @@ class SettingsScreen : Screen {
                         prefs.lockTimeout = it
                     }
                 }
+                item {
+                    var resetOnScreenOff by remember { mutableStateOf(prefs.resetOnScreenOff) }
+                    ProtectionToggleRow(
+                        title = stringResource(R.string.reset_on_screen_off_title),
+                        description = stringResource(R.string.reset_on_screen_off_desc),
+                        checked = resetOnScreenOff,
+                        onCheckedChange = {
+                            resetOnScreenOff = it
+                            prefs.resetOnScreenOff = it
+                        }
+                    )
+                }
 
                 // --- SECTION: FEEDBACK ---
                 item { SettingHeader(stringResource(R.string.feedback)) }

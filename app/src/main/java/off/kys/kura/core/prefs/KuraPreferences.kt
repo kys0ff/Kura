@@ -14,6 +14,7 @@ class KuraPreferences(context: Context) {
         const val KEY_VIBRATION = "vibration_enabled"
         const val KEY_THEME_MODE = "theme_mode"
         const val KEY_DYNAMIC_COLOR = "dynamic_color_enabled"
+        const val KEY_RESET_ON_SCREEN_OFF = "reset_on_screen_off"
     }
 
     // Timeout in milliseconds (Default: 1 minute)
@@ -34,4 +35,8 @@ class KuraPreferences(context: Context) {
     var dynamicColorEnabled: Boolean
         get() = prefs.getBoolean(KEY_DYNAMIC_COLOR, Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
         set(value) = prefs.edit { putBoolean(KEY_DYNAMIC_COLOR, value) }
+
+    var resetOnScreenOff: Boolean
+        get() = prefs.getBoolean(KEY_RESET_ON_SCREEN_OFF, true)
+        set(value) = prefs.edit { putBoolean(KEY_RESET_ON_SCREEN_OFF, value) }
 }

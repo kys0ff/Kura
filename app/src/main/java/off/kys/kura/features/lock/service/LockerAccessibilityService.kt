@@ -24,12 +24,15 @@ class LockerAccessibilityService : AccessibilityService() {
     private val appPrefs: KuraPreferences by inject()
     private val screenOffReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
-            Log.d(TAG, "onReceive: Resetting all sessions")
-            // Clear the grace period when screen turns off
-            lastUnlockedPackage = null
-            lastUnlockTime = 0L
-            // Optionally clear the registry timestamps too
-            registry.clearAllSessions()
+            // Check the preference here
+            if (appPrefs.resetOnScreenOff) {
+                Log.d(TAG, "Screen Off: Resetting sessions per user preference")
+                lastUnlockedPackage = null
+                lastUnlockTime = 0L
+                registry.clearAllSessions()
+            } else {
+                Log.d(TAG, "Screen Off: Keeping sessions active (reset disabled)")
+            }
         }
     }
 

@@ -69,4 +69,6 @@
     <string name="dynamic_color_title">Dynamic Color</string>
     <string name="dynamic_color_desc">Use colors from your wallpaper</string>
     <string name="never">Never</string>
+    <string name="reset_on_screen_off_title">Reset on Screen Off</string>
+    <string name="reset_on_screen_off_desc">Immediately lock all apps when the screen is turned off, regardless of the timeout.</string>
 </resources>
