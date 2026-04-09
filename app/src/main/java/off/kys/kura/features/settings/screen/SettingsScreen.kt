@@ -42,6 +42,7 @@ import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
 import off.kys.kura.BuildConfig
 import off.kys.kura.R
+import off.kys.kura.core.common.constants.KURA_PRIVACY_POLICY_URL
 import off.kys.kura.core.designsystem.theme.KuraTheme
 import off.kys.kura.core.prefs.KuraPreferences
 import off.kys.kura.features.main.presentation.activity.MainActivity
@@ -130,16 +131,16 @@ class SettingsScreen : Screen {
                     )
                 }
 
-                /*item {
+                item {
                     SettingActionRow(
                         title = stringResource(R.string.privacy_policy),
                         description = stringResource(R.string.privacy_policy_desc),
                         icon = painterResource(R.drawable.round_policy_24),
                         onClick = {
-                            // TODO: uriHandler.openUri("https://todo.com/privacy")
+                            uriHandler.openUri(KURA_PRIVACY_POLICY_URL)
                         }
                     )
-                }*/
+                }
 
                 item {
                     SettingInfoRow(
