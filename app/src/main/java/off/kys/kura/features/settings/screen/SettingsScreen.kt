@@ -42,6 +42,7 @@ import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
 import off.kys.kura.BuildConfig
 import off.kys.kura.R
+import off.kys.kura.core.common.constants.KURA_GITHUB_REPO_URL
 import off.kys.kura.core.common.constants.KURA_PRIVACY_POLICY_URL
 import off.kys.kura.core.designsystem.theme.KuraTheme
 import off.kys.kura.core.prefs.KuraPreferences
@@ -127,7 +128,7 @@ class SettingsScreen : Screen {
                         title = stringResource(R.string.github_repo),
                         description = stringResource(R.string.github_repo_desc),
                         icon = painterResource(R.drawable.round_code_24),
-                        onClick = { uriHandler.openUri("https://github.com/kys0ff/Kura") }
+                        onClick = { uriHandler.openUri(KURA_GITHUB_REPO_URL) }
                     )
                 }
 
