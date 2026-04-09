@@ -25,6 +25,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
@@ -34,6 +35,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -58,12 +60,19 @@ class SettingsScreen : Screen {
         val prefs: KuraPreferences = koinInject()
         val uriHandler = LocalUriHandler.current
         val mainActivity = LocalActivity.current as MainActivity
+        val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
 
         var lockTimeout by remember { mutableLongStateOf(prefs.lockTimeout) }
         var vibration by remember { mutableStateOf(prefs.vibrationEnabled) }
 
         Scaffold(
-            topBar = { TopAppBar(title = { Text(stringResource(R.string.settings)) }) }
+            modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+            topBar = {
+                TopAppBar(
+                    title = { Text(stringResource(R.string.settings)) },
+                    scrollBehavior = scrollBehavior,
+                )
+            }
         ) { padding ->
             LazyColumn(
                 modifier = Modifier
