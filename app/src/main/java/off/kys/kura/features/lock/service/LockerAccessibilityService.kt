@@ -70,9 +70,11 @@ class LockerAccessibilityService : AccessibilityService() {
 
         when (event.eventType) {
             AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED -> {
-                handleWindowChange(event)
-                // Always update what we are currently looking at
-                lastSeenPackage = currentPackage
+                // ONLY update handleWindowChange if it's not an ignored package
+                if (!isIgnoredPackage(event)) {
+                    handleWindowChange(event)
+                    lastSeenPackage = currentPackage
+                }
             }
 
             AccessibilityEvent.TYPE_VIEW_CLICKED,
@@ -93,37 +95,35 @@ class LockerAccessibilityService : AccessibilityService() {
         val currentPackage = event.packageName?.toString() ?: return
         val currentTime = System.currentTimeMillis()
 
-        if (isIgnoredPackage(event)) return
-
         if (registry.isPackageLocked(currentPackage)) {
             val isContinuation = currentPackage == lastSeenPackage
+            val isSameAsLastUnlocked = currentPackage == lastUnlockedPackage
             val timeSinceLastInteraction = currentTime - lastUnlockTime
 
-            // The grace period only matters if we are actually SWITCHING apps.
-            val isWithinGracePeriod = lastUnlockTime != 0L &&
+            // Now the grace period ONLY applies if we are returning to the same app
+            val isWithinGracePeriod = isSameAsLastUnlocked && lastUnlockTime != 0L &&
                     (appPrefs.lockTimeout == -1L || timeSinceLastInteraction < maxOf(
                         appPrefs.lockTimeout,
                         2000L
                     ))
 
             when {
-                // 1. Same app continuation (e.g., Fragment change, Toast, or just reading)
-                // We don't lock as long as the user hasn't left the app (and no screen-off reset).
+                // 1. Same app continuation (user never left the app)
                 isContinuation && lastUnlockTime != 0L -> {
                     refreshSession(currentPackage, currentTime)
                 }
 
-                // 2. Persistent session check (Registry)
+                // 2. User switched apps, but returning to the one they JUST unlocked within grace period
+                isWithinGracePeriod -> {
+                    refreshSession(currentPackage, currentTime)
+                }
+
+                // 3. Persistent session check (Long-term unlock from Disk)
                 registry.isSessionValid(currentPackage) -> {
                     refreshSession(currentPackage, currentTime)
                 }
 
-                // 3. User switched apps, but did it within the timeout
-                !isContinuation && isWithinGracePeriod -> {
-                    refreshSession(currentPackage, currentTime)
-                }
-
-                // 4. Timeout expired or brand-new app entry
+                // 4. Everything else -> LOCK
                 else -> {
                     launchLockScreen(currentPackage)
                 }
@@ -132,13 +132,13 @@ class LockerAccessibilityService : AccessibilityService() {
     }
 
     private fun isIgnoredPackage(event: AccessibilityEvent): Boolean {
-        val packageName = event.packageName?.toString() ?: return false
-        val className = event.className?.toString() ?: return false
+        val packageName = event.packageName?.toString() ?: return true
+        val className = event.className?.toString()
 
         val isSystemLauncher = packageName == "com.android.systemui"
 
         if (packageName == KURA_PACKAGE)
-            return className.contains("LockActivity")
+            return className?.contains("LockActivity") ?: false
 
         return isSystemLauncher
     }
