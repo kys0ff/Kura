@@ -46,9 +46,9 @@
     <string name="app_version">Version</string>
     <string name="lock_timeout">Lock Timeout: %1$s</string>
     <string name="dismiss">Dismiss</string>
-    <string name="help_keep_android_open">Help Keep Android Open</string>
-    <string name="keep_android_open_notice">Support the movement to keep Android an open platform for everyone.</string>
-    <string name="learn_more_at_keepandroidopen_org">Learn more at keepandroidopen.org</string>
+    <string name="help_keep_android_open">Google Broke Android. We\'re Out.</string>
+    <string name="keep_android_open_notice">Google\'s Android 16 mandate forces developers into a centralized registry and functionally kills open sideloading. We refuse to pay their toll, hand over our signing keys, or participate in their new walled garden. This app will never support Android 16+.</string>
+    <string name="learn_more_at_keepandroidopen_org">Fight the lockdown at keepandroidopen.org</string>
     <string name="no_device_security_title">Device Not Secured</string>
     <string name="no_device_security_desc">Kura requires a system PIN, Pattern, or Password to lock your apps. Without one, anyone can open the locker and your protected apps.</string>
     <string name="configure_lock">Set Password</string>

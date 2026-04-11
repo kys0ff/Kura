@@ -24,13 +24,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import off.kys.kura.R
 
 @Composable
 fun KeepAndroidOpenNotice(
-    isVisible: Boolean, // Added to control the animation state
+    isVisible: Boolean,
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -39,7 +40,7 @@ fun KeepAndroidOpenNotice(
     AnimatedVisibility(
         visible = isVisible,
         enter = slideInVertically(
-            initialOffsetY = { -40 } // Slide in slightly from the top
+            initialOffsetY = { -40 }
         ) + fadeIn(initialAlpha = 0.3f),
         exit = fadeOut() + shrinkVertically(
             animationSpec = spring(stiffness = Spring.StiffnessMediumLow)
@@ -48,44 +49,48 @@ fun KeepAndroidOpenNotice(
         Card(
             modifier = modifier.padding(vertical = 8.dp),
             colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.secondaryContainer
+                containerColor = MaterialTheme.colorScheme.errorContainer,
+                contentColor = MaterialTheme.colorScheme.onErrorContainer
             ),
-            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
         ) {
-            Column(modifier = Modifier.padding(12.dp)) {
+            Column(modifier = Modifier.padding(14.dp)) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Icon(
-                        painter = painterResource(R.drawable.round_info_24),
+                        painter = painterResource(R.drawable.round_warning_24), // Swap info for a warning icon if you have one
                         contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary
+                        tint = MaterialTheme.colorScheme.error
                     )
                     Text(
                         text = stringResource(R.string.help_keep_android_open),
-                        style = MaterialTheme.typography.titleSmall,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
                         modifier = Modifier.weight(1f)
                     )
                     IconButton(onClick = onDismiss) {
                         Icon(
                             painter = painterResource(R.drawable.round_close_24),
-                            contentDescription = stringResource(R.string.dismiss)
+                            contentDescription = stringResource(R.string.dismiss),
+                            tint = MaterialTheme.colorScheme.onErrorContainer
                         )
                     }
                 }
                 Text(
                     text = stringResource(R.string.keep_android_open_notice),
-                    style = MaterialTheme.typography.bodyMedium
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.padding(top = 4.dp, bottom = 8.dp)
                 )
                 Text(
                     text = stringResource(R.string.learn_more_at_keepandroidopen_org),
-                    style = MaterialTheme.typography.bodyMedium.copy(
-                        color = MaterialTheme.colorScheme.primary,
-                        textDecoration = TextDecoration.Underline
+                    style = MaterialTheme.typography.labelLarge.copy(
+                        color = MaterialTheme.colorScheme.error,
+                        textDecoration = TextDecoration.Underline,
+                        fontWeight = FontWeight.Bold
                     ),
                     modifier = Modifier
-                        .padding(top = 8.dp)
                         .clickable {
                             uriHandler.openUri("https://keepandroidopen.org/")
                         }
