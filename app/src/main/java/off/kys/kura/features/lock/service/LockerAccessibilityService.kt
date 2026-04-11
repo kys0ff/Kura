@@ -38,6 +38,7 @@ class LockerAccessibilityService : AccessibilityService() {
 
     companion object {
         private const val DISK_WRITE_THROTTLE: Long = 1_000L
+        private var lastSeenPackage: String? = null
         var lastUnlockedPackage: String? = null
         var lastUnlockTime: Long = 0
     }
@@ -69,8 +70,9 @@ class LockerAccessibilityService : AccessibilityService() {
 
         when (event.eventType) {
             AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED -> {
-                // Logic for switching apps (The Gatekeeper)
                 handleWindowChange(event)
+                // Always update what we are currently looking at
+                lastSeenPackage = currentPackage
             }
 
             AccessibilityEvent.TYPE_VIEW_CLICKED,
@@ -91,32 +93,54 @@ class LockerAccessibilityService : AccessibilityService() {
         val currentPackage = event.packageName?.toString() ?: return
         val currentTime = System.currentTimeMillis()
 
-        // 1. Ignore if it's our own lock screen or the system launcher
         if (isIgnoredPackage(event)) return
 
-        // 2. The "User was just here" Check
-        val timeSinceLastInteraction = currentTime - lastUnlockTime
-        val isWithinGracePeriod = timeSinceLastInteraction < appPrefs.lockTimeout
-
         if (registry.isPackageLocked(currentPackage)) {
-            if (currentPackage == lastUnlockedPackage && isWithinGracePeriod) {
-                // User just came back or is still here.
-                refreshSession(currentPackage, currentTime)
-            } else if (registry.isSessionValid(currentPackage)) {
-                // Disk session is still valid.
-                refreshSession(currentPackage, currentTime)
-            } else {
-                // Truly expired or a brand-new app.
-                launchLockScreen(currentPackage)
+            val isContinuation = currentPackage == lastSeenPackage
+            val timeSinceLastInteraction = currentTime - lastUnlockTime
+
+            // The grace period only matters if we are actually SWITCHING apps.
+            val isWithinGracePeriod = lastUnlockTime != 0L &&
+                    (appPrefs.lockTimeout == -1L || timeSinceLastInteraction < maxOf(
+                        appPrefs.lockTimeout,
+                        2000L
+                    ))
+
+            when {
+                // 1. Same app continuation (e.g., Fragment change, Toast, or just reading)
+                // We don't lock as long as the user hasn't left the app (and no screen-off reset).
+                isContinuation && lastUnlockTime != 0L -> {
+                    refreshSession(currentPackage, currentTime)
+                }
+
+                // 2. Persistent session check (Registry)
+                registry.isSessionValid(currentPackage) -> {
+                    refreshSession(currentPackage, currentTime)
+                }
+
+                // 3. User switched apps, but did it within the timeout
+                !isContinuation && isWithinGracePeriod -> {
+                    refreshSession(currentPackage, currentTime)
+                }
+
+                // 4. Timeout expired or brand-new app entry
+                else -> {
+                    launchLockScreen(currentPackage)
+                }
             }
         }
     }
 
     private fun isIgnoredPackage(event: AccessibilityEvent): Boolean {
-        if (event.packageName == KURA_PACKAGE) {
-            return event.className?.toString()?.contains("LockActivity") == true
-        }
-        return false
+        val packageName = event.packageName?.toString() ?: return false
+        val className = event.className?.toString() ?: return false
+
+        val isSystemLauncher = packageName == "com.android.systemui"
+
+        if (packageName == KURA_PACKAGE)
+            return className.contains("LockActivity")
+
+        return isSystemLauncher
     }
 
     override fun onInterrupt() {}
@@ -136,11 +160,13 @@ class LockerAccessibilityService : AccessibilityService() {
             // CLEAR_TOP combined with singleInstance ensures we don't stack locks.
             // EXCLUDE_FROM_RECENTS hides the lock screen from the multitasking menu.
             // NO_ANIMATION makes the transition instant, preventing lifecycle lag.
+            // FLAG_ACTIVITY_NO_USER_ACTION tell's the system it's an automated event, not a user tap
             addFlags(
                 Intent.FLAG_ACTIVITY_NEW_TASK or
                         Intent.FLAG_ACTIVITY_CLEAR_TOP or
                         Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS or
-                        Intent.FLAG_ACTIVITY_NO_ANIMATION
+                        Intent.FLAG_ACTIVITY_NO_ANIMATION or
+                        Intent.FLAG_ACTIVITY_NO_USER_ACTION
             )
             putExtra("TARGET_PACKAGE", packageName)
         }

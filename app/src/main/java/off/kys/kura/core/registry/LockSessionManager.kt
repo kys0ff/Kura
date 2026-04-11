@@ -27,7 +27,13 @@ class LockSessionManager(
 
     fun isSessionValid(packageName: String): Boolean {
         val lastActive = prefs.getLong("unlock_$packageName", 0L)
-        return (System.currentTimeMillis() - lastActive) < appPrefs.lockTimeout
+
+        // 1. If it was never unlocked or was cleared, it's definitely not valid.
+        if (lastActive == 0L) return false
+
+        // 2. If timeout is "Never" (-1), it's always valid if lastActive > 0.
+        // Otherwise, check the actual duration.
+        return appPrefs.lockTimeout == -1L || (System.currentTimeMillis() - lastActive) < appPrefs.lockTimeout
     }
 
     fun clearAllSessions() {
