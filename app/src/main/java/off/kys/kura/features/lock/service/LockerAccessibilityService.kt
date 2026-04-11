@@ -56,7 +56,6 @@ class LockerAccessibilityService : AccessibilityService() {
     }
 
     override fun onDestroy() {
-        // ALWAYS unregister to prevent memory leaks and crashes
         try {
             unregisterReceiver(screenOffReceiver)
         } catch (e: Exception) {
@@ -70,7 +69,6 @@ class LockerAccessibilityService : AccessibilityService() {
 
         when (event.eventType) {
             AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED -> {
-                // ONLY update handleWindowChange if it's not an ignored package
                 if (!isIgnoredPackage(event)) {
                     handleWindowChange(event)
                     lastSeenPackage = currentPackage
@@ -100,7 +98,7 @@ class LockerAccessibilityService : AccessibilityService() {
             val isSameAsLastUnlocked = currentPackage == lastUnlockedPackage
             val timeSinceLastInteraction = currentTime - lastUnlockTime
 
-            // Now the grace period ONLY applies if we are returning to the same app
+            // The grace period ONLY applies if we are returning to the same app
             val isWithinGracePeriod = isSameAsLastUnlocked && lastUnlockTime != 0L &&
                     (appPrefs.lockTimeout == -1L || timeSinceLastInteraction < maxOf(
                         appPrefs.lockTimeout,
@@ -133,14 +131,12 @@ class LockerAccessibilityService : AccessibilityService() {
 
     private fun isIgnoredPackage(event: AccessibilityEvent): Boolean {
         val packageName = event.packageName?.toString() ?: return true
-        val className = event.className?.toString()
+        val className = event.className?.toString() ?: ""
 
-        val isSystemLauncher = packageName == "com.android.systemui"
+        if (packageName == KURA_PACKAGE && className.contains("LockActivity")) return true
+        if (packageName == "com.android.systemui") return true
 
-        if (packageName == KURA_PACKAGE)
-            return className?.contains("LockActivity") ?: false
-
-        return isSystemLauncher
+        return false
     }
 
     override fun onInterrupt() {}
