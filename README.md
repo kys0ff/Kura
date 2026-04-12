@@ -26,7 +26,7 @@
 ### Build Steps
 ```bash
 # Clone the repository
-git clone [https://github.com/kys0ff/Kura.git](https://github.com/kys0ff/Kura.git)
+git clone https://github.com/kys0ff/Kura.git
 cd Kura
 
 # Build the project
