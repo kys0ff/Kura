@@ -1,4 +1,5 @@
-@file:SuppressLint("AccessibilityPolicy")
+@file:SuppressLint("AccessibilityPolicy", "UnspecifiedRegisterReceiverFlag")
+@file:Suppress("NOTHING_TO_INLINE")
 
 package off.kys.kura.features.lock.service
 
@@ -55,24 +56,17 @@ class LockerAccessibilityService : AccessibilityService() {
             registerReceiver(screenOffReceiver, filter)
         }
 
-        // 1. Filter for the system broadcast (Requires a data scheme)
         val installFilter = IntentFilter().apply {
             addAction(Intent.ACTION_PACKAGE_ADDED)
             addDataScheme("package")
         }
-
-        // 2. Filter for your custom button action (No data scheme)
         val buttonFilter = IntentFilter("off.kys.kura.ACTION_LOCK_APP")
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            // Register for installs - System broadcasts are generally okay as NOT_EXPORTED
             registerReceiver(installReceiver, installFilter, RECEIVER_NOT_EXPORTED)
-
-            // Register for your internal button click
             registerReceiver(installReceiver, buttonFilter, RECEIVER_NOT_EXPORTED)
         } else {
             registerReceiver(installReceiver, installFilter)
-            @SuppressLint("UnspecifiedRegisterReceiverFlag")
             registerReceiver(installReceiver, buttonFilter)
         }
     }
@@ -80,9 +74,13 @@ class LockerAccessibilityService : AccessibilityService() {
     override fun onDestroy() {
         try {
             unregisterReceiver(screenOffReceiver)
+        } catch (e: Exception) {
+            Log.e(TAG, "onDestroy: Error unregistering screenOffReceiver", e)
+        }
+        try {
             unregisterReceiver(installReceiver)
         } catch (e: Exception) {
-            Log.e(TAG, "onDestroy: Error unregistering receiver", e)
+            Log.e(TAG, "onDestroy: Error unregistering installReceiver", e)
         }
         super.onDestroy()
     }
@@ -92,9 +90,16 @@ class LockerAccessibilityService : AccessibilityService() {
 
         when (event.eventType) {
             AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED -> {
-                if (!isIgnoredPackage(event)) {
+                if (registry.isPackageLocked(currentPackage)) {
                     handleWindowChange(event)
-                    lastSeenPackage = currentPackage
+                } else {
+                    if (!isKuraLock(event)) {
+                        if (isSystemOrLauncher(currentPackage)) {
+                            lastUnlockedPackage = null
+                            lastUnlockTime = 0L
+                        }
+                        lastSeenPackage = currentPackage
+                    }
                 }
             }
 
@@ -112,6 +117,15 @@ class LockerAccessibilityService : AccessibilityService() {
         }
     }
 
+    private inline fun isKuraLock(event: AccessibilityEvent): Boolean {
+        val pkg = event.packageName?.toString().orEmpty()
+        val cls = event.className?.toString().orEmpty()
+        return pkg == KURA_PACKAGE && cls.contains("LockActivity")
+    }
+
+    private inline fun isSystemOrLauncher(packageName: String): Boolean =
+        packageName == "com.android.systemui"
+
     private fun handleWindowChange(event: AccessibilityEvent) {
         val currentPackage = event.packageName?.toString() ?: return
         val currentTime = System.currentTimeMillis()
@@ -120,8 +134,6 @@ class LockerAccessibilityService : AccessibilityService() {
             val isContinuation = currentPackage == lastSeenPackage
             val isSameAsLastUnlocked = currentPackage == lastUnlockedPackage
             val timeSinceLastInteraction = currentTime - lastUnlockTime
-
-            // The grace period ONLY applies if we are returning to the same app
             val isWithinGracePeriod = isSameAsLastUnlocked && lastUnlockTime != 0L &&
                     (appPrefs.lockTimeout == -1L || timeSinceLastInteraction < maxOf(
                         appPrefs.lockTimeout,
@@ -129,37 +141,21 @@ class LockerAccessibilityService : AccessibilityService() {
                     ))
 
             when {
-                // 1. Same app continuation (user never left the app)
-                isContinuation && lastUnlockTime != 0L -> {
-                    refreshSession(currentPackage, currentTime)
-                }
+                isContinuation && lastUnlockTime != 0L -> refreshSession(
+                    currentPackage,
+                    currentTime
+                )
 
-                // 2. User switched apps, but returning to the one they JUST unlocked within grace period
-                isWithinGracePeriod -> {
-                    refreshSession(currentPackage, currentTime)
-                }
+                isWithinGracePeriod -> refreshSession(currentPackage, currentTime)
 
-                // 3. Persistent session check (Long-term unlock from Disk)
-                registry.isSessionValid(currentPackage) -> {
-                    refreshSession(currentPackage, currentTime)
-                }
+                registry.isSessionValid(currentPackage) -> refreshSession(
+                    currentPackage,
+                    currentTime
+                )
 
-                // 4. Everything else -> LOCK
-                else -> {
-                    launchLockScreen(currentPackage)
-                }
+                else -> launchLockScreen(currentPackage)
             }
         }
-    }
-
-    private fun isIgnoredPackage(event: AccessibilityEvent): Boolean {
-        val packageName = event.packageName?.toString() ?: return true
-        val className = event.className?.toString() ?: ""
-
-        if (packageName == KURA_PACKAGE && className.contains("LockActivity")) return true
-        if (packageName == "com.android.systemui") return true
-
-        return false
     }
 
     override fun onInterrupt() {}
