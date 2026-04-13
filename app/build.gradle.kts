@@ -21,7 +21,8 @@ android {
     defaultConfig {
         applicationId = "off.kys.kura"
         minSdk = 24
-        targetSdk = 36
+        //noinspection OldTargetApi
+        targetSdk = 35
         versionCode = 3
         versionName = "1.0.3"
 
