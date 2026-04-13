@@ -5,6 +5,7 @@ import off.kys.kura.core.common.PackageResolver
 import off.kys.kura.core.prefs.KuraPreferences
 import off.kys.kura.core.registry.LockSessionManager
 import off.kys.kura.features.lock.presentation.viewmodel.LockViewModel
+import off.kys.kura.features.lock.service.AppInstallReceiver
 import off.kys.kura.features.main.domain.BadgeLoader
 import off.kys.kura.features.main.presentation.viewmodel.MainViewModel
 import org.koin.android.ext.koin.androidContext
@@ -17,6 +18,8 @@ val appModule = module {
     single { KuraPreferences(androidContext()) }
     single { HapticFeedbackManager(androidContext()) }
     single { BadgeLoader() }
+    single { AppInstallReceiver() }
+
     viewModel { MainViewModel(get(),get(), get(), get()) }
     viewModel { LockViewModel(get(), get(), get(), get(), get()) }
 }

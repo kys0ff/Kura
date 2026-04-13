@@ -74,4 +74,15 @@
     <string name="build_time">Build Time</string>
     <string name="lock_animation_title">Lock Screen Animation</string>
     <string name="lock_animation_desc">Enable the expressive pulse effect on the lock screen</string>
+    <string name="allow_notifications_to_get_alerts_when_new_apps_are_installed">3. Allow notifications to get alerts when new apps are installed.</string>
+    <string name="grant_notification_permission">Grant Notification Permission</string>
+    <string name="new_app_alerts">New App Alerts</string>
+    <string name="notifications_for_newly_installed_apps">Notifications for newly installed apps</string>
+    <string name="new_app_detected">New App Detected</string>
+    <string name="should_be_locked">Should %1$s be locked?</string>
+    <string name="lock_app">Lock App</string>
+    <string name="notifications">Notifications</string>
+    <string name="system_notification_settings">System Notification Settings</string>
+    <string name="system_nofi_settongs_desc">Manage notification channels, sounds, and pop-up behavior</string>
+    <string name="new_app_alerts_desc">Notify me and show a quick-lock button when a new app is installed</string>
 </resources>

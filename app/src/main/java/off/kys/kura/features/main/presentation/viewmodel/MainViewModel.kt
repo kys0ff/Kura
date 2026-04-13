@@ -5,10 +5,13 @@ import android.app.KeyguardManager
 import android.app.admin.DevicePolicyManager
 import android.content.ComponentName
 import android.content.Context
+import android.content.pm.PackageManager
+import android.os.Build
 import android.provider.Settings
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.AndroidViewModel
 import off.kys.kura.core.admin.LockerAdminReceiver
 import off.kys.kura.core.common.PackageResolver
@@ -141,13 +144,20 @@ class MainViewModel(
         val adminComponent = ComponentName(context, LockerAdminReceiver::class.java)
         val keyguardManager = context.getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager
         val isSecure = keyguardManager.isDeviceSecure
+        val isNotificationGranted = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            ContextCompat.checkSelfPermission(
+                context,
+                android.Manifest.permission.POST_NOTIFICATIONS
+            ) == PackageManager.PERMISSION_GRANTED
+        } else true
 
         uiState = uiState.copy(
             isAccessibilityEnabled = context.isAccessibilityServiceEnabled(),
             canDrawOverlays = Settings.canDrawOverlays(context),
             isAdminActive = dpm.isAdminActive(adminComponent),
             lockedApps = lockManager.getLockedPackages(),
-            isDeviceSecure = isSecure
+            isDeviceSecure = isSecure,
+            isNotificationPermissionGranted = isNotificationGranted
         )
     }
 }

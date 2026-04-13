@@ -60,7 +60,7 @@ fun KeepAndroidOpenNotice(
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Icon(
-                        painter = painterResource(R.drawable.round_warning_24), // Swap info for a warning icon if you have one
+                        painter = painterResource(R.drawable.round_warning_24),
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.error
                     )

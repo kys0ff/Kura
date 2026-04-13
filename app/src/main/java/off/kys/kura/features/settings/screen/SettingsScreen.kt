@@ -2,7 +2,9 @@
 
 package off.kys.kura.features.settings.screen
 
+import android.content.Intent
 import android.os.Build
+import android.provider.Settings
 import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -133,6 +135,36 @@ class SettingsScreen : Screen {
                         onCheckedChange = {
                             resetOnScreenOff = it
                             prefs.resetOnScreenOff = it
+                        }
+                    )
+                }
+
+                // --- SECTION: NOTIFICATIONS ---
+                item { SettingHeader(stringResource(R.string.notifications)) }
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    item {
+                        SettingActionRow(
+                            title = stringResource(R.string.system_notification_settings),
+                            description = stringResource(R.string.system_nofi_settongs_desc),
+                            icon = painterResource(R.drawable.round_notifications_24),
+                            onClick = {
+                                val intent = Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
+                                    putExtra(Settings.EXTRA_APP_PACKAGE, mainActivity.packageName)
+                                }
+                                mainActivity.startActivity(intent)
+                            }
+                        )
+                    }
+                }
+                item {
+                    var newAppAlerts by remember { mutableStateOf(prefs.newAppAlertsEnabled) }
+                    ProtectionToggleRow(
+                        title = stringResource(R.string.new_app_alerts),
+                        description = stringResource(R.string.new_app_alerts_desc),
+                        checked = newAppAlerts,
+                        onCheckedChange = {
+                            newAppAlerts = it
+                            prefs.newAppAlertsEnabled = it
                         }
                     )
                 }

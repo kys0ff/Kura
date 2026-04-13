@@ -22,6 +22,7 @@ private const val TAG = "LockerAccessibilityService"
 class LockerAccessibilityService : AccessibilityService() {
     private val registry: LockSessionManager by inject()
     private val appPrefs: KuraPreferences by inject()
+    private val installReceiver: AppInstallReceiver by inject()
     private val screenOffReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             // Check the preference here
@@ -53,11 +54,33 @@ class LockerAccessibilityService : AccessibilityService() {
         } else {
             registerReceiver(screenOffReceiver, filter)
         }
+
+        // 1. Filter for the system broadcast (Requires a data scheme)
+        val installFilter = IntentFilter().apply {
+            addAction(Intent.ACTION_PACKAGE_ADDED)
+            addDataScheme("package")
+        }
+
+        // 2. Filter for your custom button action (No data scheme)
+        val buttonFilter = IntentFilter("off.kys.kura.ACTION_LOCK_APP")
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            // Register for installs - System broadcasts are generally okay as NOT_EXPORTED
+            registerReceiver(installReceiver, installFilter, RECEIVER_NOT_EXPORTED)
+
+            // Register for your internal button click
+            registerReceiver(installReceiver, buttonFilter, RECEIVER_NOT_EXPORTED)
+        } else {
+            registerReceiver(installReceiver, installFilter)
+            @SuppressLint("UnspecifiedRegisterReceiverFlag")
+            registerReceiver(installReceiver, buttonFilter)
+        }
     }
 
     override fun onDestroy() {
         try {
             unregisterReceiver(screenOffReceiver)
+            unregisterReceiver(installReceiver)
         } catch (e: Exception) {
             Log.e(TAG, "onDestroy: Error unregistering receiver", e)
         }

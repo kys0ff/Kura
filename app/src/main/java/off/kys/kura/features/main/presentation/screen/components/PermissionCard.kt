@@ -1,5 +1,6 @@
 package off.kys.kura.features.main.presentation.screen.components
 
+import android.os.Build
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -24,7 +25,8 @@ import off.kys.kura.features.main.presentation.state.MainViewState
 fun PermissionCard(
     state: MainViewState,
     onGrantAccessibility: () -> Unit,
-    onGrantOverlay: () -> Unit
+    onGrantOverlay: () -> Unit,
+    onGrantNotification: () -> Unit
 ) {
     Card(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer),
@@ -47,6 +49,14 @@ fun PermissionCard(
                     text = stringResource(R.string._2_allow_display_over_other_apps_to_show_the_lock_screen),
                     buttonText = stringResource(R.string.allow_overlay),
                     onClick = onGrantOverlay
+                )
+            }
+            // Add Notification Permission (Only if on API 33+)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && !state.isNotificationPermissionGranted) {
+                PermissionItem(
+                    text = stringResource(R.string.allow_notifications_to_get_alerts_when_new_apps_are_installed),
+                    buttonText = stringResource(R.string.grant_notification_permission),
+                    onClick = onGrantNotification
                 )
             }
         }

@@ -28,7 +28,7 @@ class PackageResolver(context: Context) {
         return resolveInfos
             .asSequence()
             .map { it.activityInfo.applicationInfo }
-            .distinctBy { it.packageName } // Ensure unique packages
+            .distinctBy { it.packageName }
             .filter { it.packageName != KURA_PACKAGE && it.packageName != ANDROID_SETTINGS_PACKAGE }
             .map { AppInfo(it.loadLabel(pm).toString(), it.packageName) }
             .sortedBy { it.name }

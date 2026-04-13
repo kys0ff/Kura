@@ -1,5 +1,6 @@
 package off.kys.kura.features.main.presentation.state
 
+import android.os.Build
 import off.kys.kura.core.common.constants.ANDROID_SETTINGS_PACKAGE
 import off.kys.kura.core.common.constants.ANDROID_UNINSTALLER_PACKAGES
 import off.kys.kura.core.common.constants.KURA_PACKAGE
@@ -10,6 +11,7 @@ data class MainViewState(
     val isAccessibilityEnabled: Boolean = true,
     val canDrawOverlays: Boolean = true,
     val isAdminActive: Boolean = false,
+    val isNotificationPermissionGranted: Boolean = true,
     val lockedApps: Set<String> = emptySet(),
     val filteredApps: List<AppInfo> = emptyList(),
     val installedApps: List<AppInfo> = emptyList(),
@@ -21,4 +23,7 @@ data class MainViewState(
     val isUninstallLocked: Boolean = ANDROID_UNINSTALLER_PACKAGES.all { lockedApps.contains(it) }
     val areAllLocked: Boolean =
         installedApps.isNotEmpty() && installedApps.all { lockedApps.contains(it.packageName) }
+
+    fun checkNotificationPermission(): Boolean =
+        (!isNotificationPermissionGranted && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
 }

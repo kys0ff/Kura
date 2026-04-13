@@ -2,11 +2,15 @@
 
 package off.kys.kura.features.main.presentation.screen
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.app.admin.DevicePolicyManager
 import android.content.ComponentName
 import android.content.Intent
+import android.os.Build
 import android.provider.Settings
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -62,6 +66,11 @@ class MainScreen : Screen {
         val state = viewModel.uiState
         val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
         val adminComponent = remember { ComponentName(context, LockerAdminReceiver::class.java) }
+        val notificationPermissionLauncher = rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.RequestPermission()
+        ) {
+            viewModel.onEvent(MainUiEvent.RefreshSystemStates)
+        }
 
         var showKeepAndroidOpenNotice by rememberSaveable { mutableStateOf(true) }
 
@@ -115,7 +124,7 @@ class MainScreen : Screen {
                     )
                 }
 
-                if (!state.isAccessibilityEnabled || !state.canDrawOverlays) {
+                if (!state.isAccessibilityEnabled || !state.canDrawOverlays || state.checkNotificationPermission()) {
                     item {
                         PermissionCard(
                             state = state,
@@ -131,6 +140,11 @@ class MainScreen : Screen {
                                     "package:${context.packageName}".toUri()
                                 )
                                 context.startActivity(intent)
+                            },
+                            onGrantNotification = {
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                                    notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                                }
                             }
                         )
                     }

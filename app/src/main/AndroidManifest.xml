@@ -79,6 +79,14 @@
                 <action android:name="android.app.action.DEVICE_ADMIN_ENABLED" />
             </intent-filter>
         </receiver>
+
+        <receiver
+            android:name=".features.lock.service.AppInstallReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="off.kys.kura.ACTION_LOCK_APP" />
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>
