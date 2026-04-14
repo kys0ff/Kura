@@ -90,7 +90,7 @@ class LockerAccessibilityService : AccessibilityService() {
 
         when (event.eventType) {
             AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED -> {
-                if (registry.isPackageLocked(currentPackage)) {
+                if (registry.isPackageLocked(currentPackage) && !isKuraLock(event)) {
                     handleWindowChange(event)
                 } else {
                     if (!isKuraLock(event)) {
