@@ -4,9 +4,10 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.os.Build
 import androidx.core.content.edit
+import off.kys.kura.core.common.LockStyle
 
 class KuraPreferences(context: Context) {
-    private val prefs: SharedPreferences = 
+    private val prefs: SharedPreferences =
         context.getSharedPreferences("kura_settings", Context.MODE_PRIVATE)
 
     companion object {
@@ -15,8 +16,8 @@ class KuraPreferences(context: Context) {
         const val KEY_THEME_MODE = "theme_mode"
         const val KEY_DYNAMIC_COLOR = "dynamic_color_enabled"
         const val KEY_RESET_ON_SCREEN_OFF = "reset_on_screen_off"
-        const val KEY_LOCK_ANIMATION = "lock_animation_enabled"
         const val KEY_NEW_APP_ALERTS = "new_app_alerts_enabled"
+        const val KEY_LOCK_STYLE = "lock_style"
     }
 
     // Timeout in milliseconds (Default: 1 minute)
@@ -28,9 +29,9 @@ class KuraPreferences(context: Context) {
         get() = prefs.getBoolean(KEY_VIBRATION, true)
         set(value) = prefs.edit { putBoolean(KEY_VIBRATION, value) }
 
-    // Theme Mode (Default: SYSTEM)
+    // Theme Mode (Default: WALLPAPER)
     var themeMode: String
-        get() = prefs.getString(KEY_THEME_MODE, "SYSTEM") ?: "SYSTEM"
+        get() = prefs.getString(KEY_THEME_MODE, "WALLPAPER") ?: "WALLPAPER"
         set(value) = prefs.edit { putString(KEY_THEME_MODE, value) }
 
     // Default to true only if the OS supports it (API 31+)
@@ -42,11 +43,13 @@ class KuraPreferences(context: Context) {
         get() = prefs.getBoolean(KEY_RESET_ON_SCREEN_OFF, true)
         set(value) = prefs.edit { putBoolean(KEY_RESET_ON_SCREEN_OFF, value) }
 
-    var lockAnimationEnabled: Boolean
-        get() = prefs.getBoolean(KEY_LOCK_ANIMATION, true)
-        set(value) = prefs.edit { putBoolean(KEY_LOCK_ANIMATION, value) }
-
     var newAppAlertsEnabled: Boolean
         get() = prefs.getBoolean(KEY_NEW_APP_ALERTS, true)
         set(value) = prefs.edit { putBoolean(KEY_NEW_APP_ALERTS, value) }
+
+    var lockStyle: LockStyle
+        get() = LockStyle.fromString(
+            prefs.getString(KEY_LOCK_STYLE, LockStyle.WALLPAPER()) ?: LockStyle.WALLPAPER()
+        )
+        set(value) = prefs.edit { putString(KEY_LOCK_STYLE, value.name) }
 }

@@ -85,4 +85,8 @@
     <string name="system_notification_settings">System Notification Settings</string>
     <string name="system_nofi_settongs_desc">Manage notification channels, sounds, and pop-up behavior</string>
     <string name="new_app_alerts_desc">Notify me and show a quick-lock button when a new app is installed</string>
+    <string name="lock_screen_visuals">Lock Screen Visuals</string>
+    <string name="pulse">Pulse</string>
+    <string name="frozen">Frozen</string>
+    <string name="system_wallpaper">Wallpaper</string>
 </resources>

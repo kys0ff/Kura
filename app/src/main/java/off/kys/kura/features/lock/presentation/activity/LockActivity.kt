@@ -56,8 +56,8 @@ class LockActivity : FragmentActivity() {
             ) {
                 val state by viewModel.uiState.collectAsStateWithLifecycle()
 
-                LockScreen(showAnimation = kuraPreferences.lockAnimationEnabled)
-                LaunchedEffect(key1 = Unit) {  // Trigger prompt once when the view is ready
+                LockScreen(lockStyle = kuraPreferences.lockStyle)
+                LaunchedEffect(key1 = Unit) {
                     if (viewModel.targetPackage.isNotEmpty()) {
                         showBiometricPrompt(state.appName)
                     } else {

@@ -10,7 +10,9 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -23,16 +25,28 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
+import off.kys.kura.core.common.LockStyle
 import off.kys.kura.core.designsystem.theme.KuraTheme
 
 @Composable
-fun LockScreen(showAnimation: Boolean = true) {
+fun LockScreen(lockStyle: LockStyle) {
+    if (lockStyle == LockStyle.WALLPAPER) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Transparent)
+        )
+        return
+    }
+
     val isDark = isSystemInDarkTheme()
     val minAlpha = if (isDark) 0.1f else 0.2f
     val maxAlpha = if (isDark) 0.25f else 0.5f
 
+    val isPulseActive = lockStyle == LockStyle.PULSE
     // Only run transitions if animation is enabled
-    val infiniteTransition = if (showAnimation) rememberInfiniteTransition(label = "pulse") else null
+    val infiniteTransition =
+        if (isPulseActive) rememberInfiniteTransition(label = "pulse") else null
 
     val scale by infiniteTransition?.animateFloat(
         initialValue = 0.85f, targetValue = 1.3f,
@@ -50,7 +64,10 @@ fun LockScreen(showAnimation: Boolean = true) {
 
     val offsetX by infiniteTransition?.animateFloat(
         initialValue = -60f, targetValue = 60f,
-        animationSpec = infiniteRepeatable(tween(4000, easing = EaseInOutCubic), RepeatMode.Reverse),
+        animationSpec = infiniteRepeatable(
+            tween(4000, easing = EaseInOutCubic),
+            RepeatMode.Reverse
+        ),
         label = "offsetX"
     )
         ?: remember { mutableFloatStateOf(0f) }
@@ -88,6 +105,6 @@ fun LockScreen(showAnimation: Boolean = true) {
 @Composable
 private fun LockScreenPreview() {
     KuraTheme {
-        LockScreen()
+        LockScreen(LockStyle.WALLPAPER)
     }
 }

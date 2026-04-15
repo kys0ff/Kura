@@ -6,6 +6,7 @@ import android.content.Intent
 import android.os.Build
 import android.provider.Settings
 import androidx.activity.compose.LocalActivity
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -25,6 +26,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -41,11 +43,13 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
 import off.kys.kura.BuildConfig
 import off.kys.kura.R
+import off.kys.kura.core.common.LockStyle
 import off.kys.kura.core.common.constants.KURA_GITHUB_REPO_URL
 import off.kys.kura.core.common.constants.KURA_PRIVACY_POLICY_URL
 import off.kys.kura.core.designsystem.theme.KuraTheme
@@ -105,14 +109,12 @@ class SettingsScreen : Screen {
                     }
                 }
                 item {
-                    var lockAnimation by remember { mutableStateOf(prefs.lockAnimationEnabled) }
-                    ProtectionToggleRow(
-                        title = stringResource(R.string.lock_animation_title),
-                        description = stringResource(R.string.lock_animation_desc),
-                        checked = lockAnimation,
-                        onCheckedChange = {
-                            lockAnimation = it
-                            prefs.lockAnimationEnabled = it
+                    var currentStyle by remember { mutableStateOf(prefs.lockStyle) }
+                    LockStyleSelector(
+                        selectedStyle = currentStyle,
+                        onStyleSelected = { newStyle ->
+                            currentStyle = newStyle
+                            prefs.lockStyle = newStyle
                         }
                     )
                 }
@@ -148,9 +150,13 @@ class SettingsScreen : Screen {
                             description = stringResource(R.string.system_nofi_settongs_desc),
                             icon = painterResource(R.drawable.round_notifications_24),
                             onClick = {
-                                val intent = Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
-                                    putExtra(Settings.EXTRA_APP_PACKAGE, mainActivity.packageName)
-                                }
+                                val intent =
+                                    Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
+                                        putExtra(
+                                            Settings.EXTRA_APP_PACKAGE,
+                                            mainActivity.packageName
+                                        )
+                                    }
                                 mainActivity.startActivity(intent)
                             }
                         )
@@ -227,7 +233,7 @@ class SettingsScreen : Screen {
     @Composable
     private fun ThemeSelector(currentTheme: String, onThemeSelected: (String) -> Unit) {
         val options = listOf(
-            "SYSTEM" to stringResource(R.string.theme_system),
+            "WALLPAPER" to stringResource(R.string.theme_system),
             "LIGHT" to stringResource(R.string.theme_light),
             "DARK" to stringResource(R.string.theme_dark)
         )
@@ -284,6 +290,71 @@ class SettingsScreen : Screen {
             color = MaterialTheme.colorScheme.primary,
             modifier = Modifier.padding(start = 16.dp, top = 24.dp, bottom = 8.dp)
         )
+    }
+
+    @Composable
+    private fun LockStyleSelector(selectedStyle: LockStyle, onStyleSelected: (LockStyle) -> Unit) {
+        val options = listOf(
+            Triple(
+                LockStyle.WALLPAPER,
+                stringResource(R.string.system_wallpaper), R.drawable.round_wallpaper_24
+            ),
+            Triple(LockStyle.PULSE, stringResource(R.string.pulse), R.drawable.round_blur_on_24),
+            Triple(
+                LockStyle.FROZEN,
+                stringResource(R.string.frozen), R.drawable.round_blur_circular_24
+            )
+        )
+
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                text = stringResource(R.string.lock_screen_visuals),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(bottom = 12.dp)
+            )
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                options.forEach { (style, label, icon) ->
+                    val isSelected = selectedStyle == style
+
+                    Surface(
+                        onClick = { onStyleSelected(style) },
+                        modifier = Modifier.weight(1f),
+                        shape = MaterialTheme.shapes.medium,
+                        color = if (isSelected) MaterialTheme.colorScheme.primaryContainer
+                        else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                        border = if (isSelected) BorderStroke(
+                            1.dp,
+                            MaterialTheme.colorScheme.primary
+                        )
+                        else null
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(vertical = 12.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Icon(
+                                painter = painterResource(icon),
+                                contentDescription = null,
+                                tint = if (isSelected) MaterialTheme.colorScheme.primary
+                                else MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Text(
+                                text = label,
+                                style = MaterialTheme.typography.labelMedium,
+                                color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer
+                                else MaterialTheme.colorScheme.onSurfaceVariant,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
+                    }
+                }
+            }
+        }
     }
 
     @Composable
