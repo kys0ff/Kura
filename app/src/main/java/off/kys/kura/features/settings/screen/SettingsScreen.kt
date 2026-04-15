@@ -49,7 +49,7 @@ import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
 import off.kys.kura.BuildConfig
 import off.kys.kura.R
-import off.kys.kura.core.common.LockStyle
+import off.kys.kura.core.common.LockAppearance
 import off.kys.kura.core.common.constants.KURA_GITHUB_REPO_URL
 import off.kys.kura.core.common.constants.KURA_PRIVACY_POLICY_URL
 import off.kys.kura.core.designsystem.theme.KuraTheme
@@ -109,12 +109,12 @@ class SettingsScreen : Screen {
                     }
                 }
                 item {
-                    var currentStyle by remember { mutableStateOf(prefs.lockStyle) }
+                    var currentStyle by remember { mutableStateOf(prefs.lockAppearance) }
                     LockStyleSelector(
                         selectedStyle = currentStyle,
                         onStyleSelected = { newStyle ->
                             currentStyle = newStyle
-                            prefs.lockStyle = newStyle
+                            prefs.lockAppearance = newStyle
                         }
                     )
                 }
@@ -293,15 +293,15 @@ class SettingsScreen : Screen {
     }
 
     @Composable
-    private fun LockStyleSelector(selectedStyle: LockStyle, onStyleSelected: (LockStyle) -> Unit) {
+    private fun LockStyleSelector(selectedStyle: LockAppearance, onStyleSelected: (LockAppearance) -> Unit) {
         val options = listOf(
             Triple(
-                LockStyle.WALLPAPER,
+                LockAppearance.WALLPAPER,
                 stringResource(R.string.system_wallpaper), R.drawable.round_wallpaper_24
             ),
-            Triple(LockStyle.PULSE, stringResource(R.string.pulse), R.drawable.round_blur_on_24),
+            Triple(LockAppearance.PULSE, stringResource(R.string.pulse), R.drawable.round_blur_on_24),
             Triple(
-                LockStyle.FROZEN,
+                LockAppearance.FROZEN,
                 stringResource(R.string.frozen), R.drawable.round_blur_circular_24
             )
         )

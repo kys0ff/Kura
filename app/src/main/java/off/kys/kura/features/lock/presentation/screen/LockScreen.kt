@@ -25,12 +25,12 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
-import off.kys.kura.core.common.LockStyle
+import off.kys.kura.core.common.LockAppearance
 import off.kys.kura.core.designsystem.theme.KuraTheme
 
 @Composable
-fun LockScreen(lockStyle: LockStyle) {
-    if (lockStyle == LockStyle.WALLPAPER) {
+fun LockScreen(lockAppearance: LockAppearance) {
+    if (lockAppearance == LockAppearance.WALLPAPER) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -43,7 +43,7 @@ fun LockScreen(lockStyle: LockStyle) {
     val minAlpha = if (isDark) 0.1f else 0.2f
     val maxAlpha = if (isDark) 0.25f else 0.5f
 
-    val isPulseActive = lockStyle == LockStyle.PULSE
+    val isPulseActive = lockAppearance == LockAppearance.PULSE
     // Only run transitions if animation is enabled
     val infiniteTransition =
         if (isPulseActive) rememberInfiniteTransition(label = "pulse") else null
@@ -105,6 +105,6 @@ fun LockScreen(lockStyle: LockStyle) {
 @Composable
 private fun LockScreenPreview() {
     KuraTheme {
-        LockScreen(LockStyle.WALLPAPER)
+        LockScreen(LockAppearance.WALLPAPER)
     }
 }

@@ -4,7 +4,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.os.Build
 import androidx.core.content.edit
-import off.kys.kura.core.common.LockStyle
+import off.kys.kura.core.common.LockAppearance
 
 class KuraPreferences(context: Context) {
     private val prefs: SharedPreferences =
@@ -47,9 +47,9 @@ class KuraPreferences(context: Context) {
         get() = prefs.getBoolean(KEY_NEW_APP_ALERTS, true)
         set(value) = prefs.edit { putBoolean(KEY_NEW_APP_ALERTS, value) }
 
-    var lockStyle: LockStyle
-        get() = LockStyle.fromString(
-            prefs.getString(KEY_LOCK_STYLE, LockStyle.WALLPAPER()) ?: LockStyle.WALLPAPER()
+    var lockAppearance: LockAppearance
+        get() = LockAppearance.fromString(
+            prefs.getString(KEY_LOCK_STYLE, LockAppearance.WALLPAPER()) ?: LockAppearance.WALLPAPER()
         )
         set(value) = prefs.edit { putString(KEY_LOCK_STYLE, value.name) }
 }

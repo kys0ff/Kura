@@ -1,6 +1,6 @@
 package off.kys.kura.core.common
 
-enum class LockStyle {
+enum class LockAppearance {
     PULSE,
     FROZEN,
     WALLPAPER;
@@ -8,6 +8,6 @@ enum class LockStyle {
     operator fun invoke(): String = name
 
     companion object {
-        fun fromString(value: String): LockStyle = entries.find { it.name == value } ?: PULSE
+        fun fromString(value: String): LockAppearance = entries.find { it.name == value } ?: PULSE
     }
 }
