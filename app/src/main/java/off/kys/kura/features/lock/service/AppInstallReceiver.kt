@@ -22,38 +22,45 @@ class AppInstallReceiver : BroadcastReceiver() {
     private val packageResolver: PackageResolver by inject(PackageResolver::class.java)
     private val prefs: KuraPreferences by inject(KuraPreferences::class.java)
 
+    companion object {
+        private const val ACTION_LOCK_APP = "off.kys.kura.ACTION_LOCK_APP"
+        private const val EXTRA_PACKAGE = "EXTRA_PACKAGE"
+        private const val CHANNEL_ID = "app_install_alerts"
+    }
+
     override fun onReceive(context: Context?, intent: Intent?) {
         val ctx = context ?: return
         val action = intent?.action ?: return
 
-        if (action == "off.kys.kura.ACTION_LOCK_APP") {
-            val target = intent.getStringExtra("EXTRA_PACKAGE") ?: return
-            registry.updatePackageLock(target, true)
-            ctx.getNotificationService().cancel(target.hashCode())
-            return
-        }
-
-        if (action == Intent.ACTION_PACKAGE_ADDED) {
-            if (!prefs.newAppAlertsEnabled) return
-
-            val pkgName = intent.data?.schemeSpecificPart ?: return
-
-            if (registry.isPackageLocked(pkgName)) return
-
-            val isReplacing = intent.getBooleanExtra(Intent.EXTRA_REPLACING, false)
-            if (isReplacing || pkgName == KURA_PACKAGE) return
-
-            showInstallNotification(ctx, pkgName)
+        when (action) {
+            ACTION_LOCK_APP -> handleLockAction(ctx, intent)
+            Intent.ACTION_PACKAGE_ADDED -> handlePackageAdded(ctx, intent)
         }
     }
 
+    private fun handleLockAction(context: Context, intent: Intent) {
+        val target = intent.getStringExtra(EXTRA_PACKAGE) ?: return
+        registry.updatePackageLock(target, true)
+        context.getNotificationService().cancel(target.hashCode())
+    }
+
+    private fun handlePackageAdded(context: Context, intent: Intent) {
+        if (!prefs.newAppAlertsEnabled) return
+
+        val pkgName = intent.data?.schemeSpecificPart ?: return
+        val isReplacing = intent.getBooleanExtra(Intent.EXTRA_REPLACING, false)
+
+        if (isReplacing || pkgName == KURA_PACKAGE || registry.isPackageLocked(pkgName)) return
+
+        showInstallNotification(context, pkgName)
+    }
+
     private fun showInstallNotification(context: Context, pkgName: String) {
-        val channelId = "app_install_alerts"
         val nm = context.getNotificationService()
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
-                channelId,
+                CHANNEL_ID,
                 context.getString(R.string.new_app_alerts),
                 NotificationManager.IMPORTANCE_HIGH
             ).apply {
@@ -63,24 +70,24 @@ class AppInstallReceiver : BroadcastReceiver() {
         }
 
         val lockIntent = Intent(context, AppInstallReceiver::class.java).apply {
-            action = "off.kys.kura.ACTION_LOCK_APP"
-            putExtra("EXTRA_PACKAGE", pkgName)
+            action = ACTION_LOCK_APP
+            putExtra(EXTRA_PACKAGE, pkgName)
         }
+
         val lockPendingIntent = PendingIntent.getBroadcast(
-            context, pkgName.hashCode(), lockIntent,
+            context,
+            pkgName.hashCode(),
+            lockIntent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
-        val builder = NotificationCompat.Builder(context, channelId)
+
+        val appName = packageResolver.getAppName(pkgName) ?: pkgName
+        val builder = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(android.R.drawable.ic_lock_lock)
             .setContentTitle(context.getString(R.string.new_app_detected))
-            .setContentText(
-                context.getString(
-                    R.string.should_be_locked,
-                    packageResolver.getAppName(pkgName) ?: pkgName
-                )
-            )
+            .setContentText(context.getString(R.string.should_be_locked, appName))
             .setPriority(NotificationCompat.PRIORITY_HIGH)
-            .setCategory(NotificationCompat.CATEGORY_ALARM) // Helps bypass some DnD settings
+            .setCategory(NotificationCompat.CATEGORY_ALARM)
             .setAutoCancel(true)
             .addAction(
                 android.R.drawable.ic_lock_lock,
@@ -90,5 +97,4 @@ class AppInstallReceiver : BroadcastReceiver() {
 
         nm.notify(pkgName.hashCode(), builder.build())
     }
-
 }
