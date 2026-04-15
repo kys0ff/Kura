@@ -26,7 +26,6 @@ class AppInstallReceiver : BroadcastReceiver() {
         val ctx = context ?: return
         val action = intent?.action ?: return
 
-        // 1. Handle the Lock Button (No data scheme here)
         if (action == "off.kys.kura.ACTION_LOCK_APP") {
             val target = intent.getStringExtra("EXTRA_PACKAGE") ?: return
             registry.updatePackageLock(target, true)
@@ -34,13 +33,13 @@ class AppInstallReceiver : BroadcastReceiver() {
             return
         }
 
-        // 2. Handle the Installation (Data scheme present)
         if (action == Intent.ACTION_PACKAGE_ADDED) {
             if (!prefs.newAppAlertsEnabled) return
 
             val pkgName = intent.data?.schemeSpecificPart ?: return
 
-            // Ignore updates
+            if (registry.isPackageLocked(pkgName)) return
+
             val isReplacing = intent.getBooleanExtra(Intent.EXTRA_REPLACING, false)
             if (isReplacing || pkgName == KURA_PACKAGE) return
 

@@ -71,6 +71,7 @@ dependencies {
     implementation(libs.koin.androidx.compose)
     implementation(libs.voyager.navigator)
     implementation(libs.kotlinx.serialization.json)
+    implementation(libs.gau)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
